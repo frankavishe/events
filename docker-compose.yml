@@ -6,8 +6,8 @@ services:
       POSTGRES_USER: events
       POSTGRES_PASSWORD: events
     ports:
-      # Host port 5433 avoids clashing with a locally installed PostgreSQL on 5432.
-      - "${POSTGRES_HOST_PORT:-5433}:5432"
+      # Host port 5435 avoids clashing with a locally installed PostgreSQL on 5432.
+      - "${POSTGRES_HOST_PORT:-5435}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

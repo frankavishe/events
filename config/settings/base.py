@@ -130,7 +130,7 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "UPDATE_LAST_LOGIN": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
-    "SIGNING_KEY": env("JWT_SIGNING_KEY", default=SECRET_KEY),
+    "SIGNING_KEY": env("JWT_SIGNING_KEY", default="") or SECRET_KEY,
 }
 
 SPECTACULAR_SETTINGS = {

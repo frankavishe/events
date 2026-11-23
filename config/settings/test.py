@@ -3,7 +3,7 @@
 import os
 
 os.environ.setdefault("DJANGO_SECRET_KEY", "test-secret-key-not-for-production")
-os.environ.setdefault("DATABASE_URL", "postgres://events:events@localhost:5433/events")
+os.environ.setdefault("DATABASE_URL", "postgres://events:events@localhost:5435/events")
 
 from .base import *  # noqa: E402, F403
 
