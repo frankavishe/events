@@ -82,17 +82,17 @@ delivery phase. Implementation stops there until the project owner has reviewed 
 **Independent Test**: quickstart scenarios 2 and 5.
 
 ### Tests
-- [ ] T030 [P] [US2] State-machine unit tests (every allowed/forbidden transition × role, audit row written) in tests/orders/test_state_machine.py
-- [ ] T031 [P] [US2] Order creation tests (totals, snapshots unaffected by later price change, min qty, min notice, unavailable item, unapproved vendor, mixed vendors rejected, 18+ rule, package per-guest pricing) in tests/orders/test_create_order.py
-- [ ] T032 [P] [US2] Order API scoping and action endpoint tests (confirm/decline/cancel/fulfil/complete → 409 on invalid) in tests/orders/test_orders_api.py
-- [ ] T033 [P] [US2] Expiry task test with freezegun in tests/orders/test_expiry.py
+- [x] T030 [P] [US2] State-machine unit tests (every allowed/forbidden transition × role, audit row written) in tests/orders/test_state_machine.py
+- [x] T031 [P] [US2] Order creation tests (totals, snapshots unaffected by later price change, min qty, min notice, unavailable item, unapproved vendor, mixed vendors rejected, 18+ rule, package per-guest pricing) in tests/orders/test_create_order.py
+- [x] T032 [P] [US2] Order API scoping and action endpoint tests (confirm/decline/cancel/fulfil/complete → 409 on invalid) in tests/orders/test_orders_api.py
+- [x] T033 [P] [US2] Expiry task test with freezegun in tests/orders/test_expiry.py
 
 ### Implementation
-- [ ] T034 [US2] Order, OrderLine, OrderStatusChange models + migration (reference generator) in apps/orders/models.py
-- [ ] T035 [US2] orders/services.py: create_order (validation + snapshots + totals), transition() with ALLOWED table, list scoping helpers
-- [ ] T036 [US2] Order serializers and viewset with actions in apps/orders/views.py, serializers.py, urls.py
-- [ ] T037 [US2] Celery beat task expire_pending_orders (every 15 min) in apps/orders/tasks.py and beat schedule in settings
-- [ ] T038 [P] [US2] Order admin with status history inline in apps/orders/admin.py
+- [x] T034 [US2] Order, OrderLine, OrderStatusChange models + migration (reference generator) in apps/orders/models.py
+- [x] T035 [US2] orders/services.py: create_order (validation + snapshots + totals), transition() with ALLOWED table, list scoping helpers
+- [x] T036 [US2] Order serializers and viewset with actions in apps/orders/views.py, serializers.py, urls.py
+- [x] T037 [US2] Celery beat task expire_pending_orders (every 15 min) in apps/orders/tasks.py and beat schedule in settings
+- [x] T038 [P] [US2] Order admin with status history inline in apps/orders/admin.py
 
 ## Phase 5: User Story 3 — Pay online or cash (P1) — Delivery Phase 3
 
@@ -100,21 +100,21 @@ delivery phase. Implementation stops there until the project owner has reviewed 
 **Independent Test**: quickstart scenarios 3 and 4.
 
 ### Tests
-- [ ] T039 [P] [US3] AzamPayGateway tests with respx (token caching, MNO checkout request shape, error → GatewayError) in tests/payments/test_azampay_gateway.py
-- [ ] T040 [P] [US3] Pay endpoint tests (online 202, cash → awaiting_cash, not-confirmed → 409, already paid → 409, gateway down → 502 + order still payable) in tests/payments/test_pay_api.py
-- [ ] T041 [P] [US3] Callback tests (bad token 404, success once, duplicate no-op, failure, amount mismatch, unknown ref, failure-after-success ignored) in tests/payments/test_azampay_callback.py
-- [ ] T042 [P] [US3] Cash confirm tests (vendor owner ok, other vendor 403, client 403) in tests/payments/test_cash.py
-- [ ] T043 [P] [US3] Ledger unit tests (commission rounding, rate at payment time, cash earning as commission owed, balance formula, refund reversal) in tests/ledger/test_ledger_services.py
+- [x] T039 [P] [US3] AzamPayGateway tests with respx (token caching, MNO checkout request shape, error → GatewayError) in tests/payments/test_azampay_gateway.py
+- [x] T040 [P] [US3] Pay endpoint tests (online 202, cash → awaiting_cash, not-confirmed → 409, already paid → 409, gateway down → 502 + order still payable) in tests/payments/test_pay_api.py
+- [x] T041 [P] [US3] Callback tests (bad token 404, success once, duplicate no-op, failure, amount mismatch, unknown ref, failure-after-success ignored) in tests/payments/test_azampay_callback.py
+- [x] T042 [P] [US3] Cash confirm tests (vendor owner ok, other vendor 403, client 403) in tests/payments/test_cash.py
+- [x] T043 [P] [US3] Ledger unit tests (commission rounding, rate at payment time, cash earning as commission owed, balance formula, refund reversal) in tests/ledger/test_ledger_services.py
 
 ### Implementation
-- [ ] T044 [US3] Payment model + partial unique constraint + migration in apps/payments/models.py
-- [ ] T045 [P] [US3] PaymentGateway protocol + GatewayError in apps/payments/gateways/base.py; MockGateway in gateways/mock.py; factory get_gateway() by settings
-- [ ] T046 [US3] AzamPayGateway (token cache in Redis/Django cache, MNO + bank checkout) in apps/payments/gateways/azampay.py
-- [ ] T047 [P] [US3] CommissionSetting (seed 10%), VendorEarning, Payout models + migration in apps/ledger/models.py
-- [ ] T048 [US3] ledger/services.py: current_rate(), record_earning(payment), reverse_earning(order), vendor_balance(vendor)
-- [ ] T049 [US3] payments/services.py: start_payment(), confirm_cash(), handle_gateway_result() (select_for_update, idempotent, calls orders.transition + ledger.record_earning)
-- [ ] T050 [US3] Endpoints /orders/{id}/pay/, /orders/{id}/confirm-cash/, /payments/{id}/, /orders/{id}/refund/ and AzamPay callback view /api/v1/webhooks/azampay/<token>/ in apps/payments/views.py, urls.py
-- [ ] T051 [US3] reconcile_pending_payments beat task (flag online payments pending >30 min) in apps/payments/tasks.py
+- [x] T044 [US3] Payment model + partial unique constraint + migration in apps/payments/models.py
+- [x] T045 [P] [US3] PaymentGateway protocol + GatewayError in apps/payments/gateways/base.py; MockGateway in gateways/mock.py; factory get_gateway() by settings
+- [x] T046 [US3] AzamPayGateway (token cache in Redis/Django cache, MNO + bank checkout) in apps/payments/gateways/azampay.py
+- [x] T047 [P] [US3] CommissionSetting (seed 10%), VendorEarning, Payout models + migration in apps/ledger/models.py
+- [x] T048 [US3] ledger/services.py: current_rate(), record_earning(payment), reverse_earning(order), vendor_balance(vendor)
+- [x] T049 [US3] payments/services.py: start_payment(), confirm_cash(), handle_gateway_result() (select_for_update, idempotent, calls orders.transition + ledger.record_earning)
+- [x] T050 [US3] Endpoints /orders/{id}/pay/, /orders/{id}/confirm-cash/, /payments/{id}/, /orders/{id}/refund/ and AzamPay callback view /api/v1/webhooks/azampay/<token>/ in apps/payments/views.py, urls.py
+- [x] T051 [US3] reconcile_pending_payments beat task (flag online payments pending >30 min) in apps/payments/tasks.py
 
 **🛑 REVIEW & COMMIT — Delivery Phase 3** (+ optional AzamPay sandbox smoke test with owner's credentials)
 

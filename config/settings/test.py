@@ -20,4 +20,5 @@ CELERY_BROKER_URL = "memory://"
 CELERY_RESULT_BACKEND = "cache+memory://"
 
 PAYMENT_GATEWAY = "mock"
+AZAMPAY_CALLBACK_TOKEN = "test-callback-token"  # noqa: S105
 LLM_PROVIDER = "fake"

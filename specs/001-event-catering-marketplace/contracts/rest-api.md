@@ -39,7 +39,7 @@ implemented.
 | Method | Path | Who |
 |--------|------|-----|
 | GET/POST | `/events/` | client (own) |
-| GET/PATCH/DELETE | `/events/{id}/` | client owner; delete blocked if it has non-cancelled orders |
+| GET/PATCH/DELETE | `/events/{id}/` | client owner; delete and changing `starts_at` blocked (409) unless all its orders are cancelled, declined or expired |
 
 ## Orders
 | Method | Path | Who | Notes |
@@ -47,7 +47,7 @@ implemented.
 | POST | `/orders/` | client | `{event_id, vendor_id, lines: [{item_id?, package_id?, quantity}], age_confirmed?, notes?}` → 201 order with computed totals |
 | GET | `/orders/` | client: own; vendor: theirs; admin: all | filter `status`, `event` |
 | GET | `/orders/{id}/` | scoped | includes lines, payments, status history |
-| POST | `/orders/{id}/confirm/` \| `/decline/` | vendor owner | decline takes `{reason}` |
+| POST | `/orders/{id}/confirm/` \| `/decline/` | vendor owner, admin | decline takes `{reason}` |
 | POST | `/orders/{id}/cancel/` | client owner, admin | |
 | POST | `/orders/{id}/fulfil/` \| `/complete/` | vendor owner, admin | |
 | POST | `/orders/{id}/refund/` | admin | `{note}` |
@@ -55,7 +55,7 @@ implemented.
 ## Payments
 | Method | Path | Who | Notes |
 |--------|------|-----|-------|
-| POST | `/orders/{id}/pay/` | client owner | `{method: "online", provider: "mpesa"\|"tigo"\|"airtel"\|"halopesa"\|"azampesa", phone}` → 202 `{payment_id, status:"pending"}`; or `{method:"cash"}` → order `awaiting_cash` |
+| POST | `/orders/{id}/pay/` | client owner | `{method: "online", provider: "mpesa"\|"tigo"\|"airtel"\|"halopesa"\|"azampesa", phone}` or `{method:"online", provider:"bank", bank_name:"CRDB"\|"NMB", account_number, phone, otp}` → 202 `{payment_id, status:"pending", order_status}`; or `{method:"cash"}` → 200, order `awaiting_cash`. 409 `payment_in_progress` while an online payment is pending (< 30 min). OTP and account number are never stored |
 | POST | `/orders/{id}/confirm-cash/` | vendor owner, admin | → order `paid`, earning created |
 | GET | `/payments/{id}/` | scoped | poll status |
 

@@ -7,6 +7,8 @@ from django.utils import timezone
 
 from apps.catalog.models import Category, Item, Package, PackageItem
 from apps.events.models import Event
+from apps.orders.models import Order, OrderLine
+from apps.payments.models import Payment
 from apps.vendors.models import ServiceArea, VendorProfile
 
 User = get_user_model()
@@ -121,3 +123,45 @@ class EventFactory(factory.django.DjangoModelFactory):
     starts_at = factory.LazyFunction(lambda: timezone.now() + timedelta(days=30))
     venue = "Mlimani City Hall"
     guest_count = 100
+
+
+class OrderFactory(factory.django.DjangoModelFactory):
+    """A pending order. Use `status=` to start elsewhere in the lifecycle."""
+
+    class Meta:
+        model = Order
+
+    reference = factory.Sequence(lambda n: f"EVT-260101-{n:04d}")
+    client = factory.SubFactory(ClientFactory)
+    event = factory.SubFactory(EventFactory, client=factory.SelfAttribute("..client"))
+    vendor = factory.SubFactory(VendorProfileFactory)
+    status = Order.Status.PENDING
+    subtotal = Decimal("150000.00")
+    total = factory.SelfAttribute("subtotal")
+    expires_at = factory.LazyFunction(lambda: timezone.now() + timedelta(hours=24))
+
+
+class OrderLineFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OrderLine
+
+    order = factory.SubFactory(OrderFactory)
+    item = factory.SubFactory(ItemFactory, vendor=factory.SelfAttribute("..order.vendor"))
+    name_snapshot = factory.SelfAttribute("item.name")
+    unit_snapshot = factory.SelfAttribute("item.unit")
+    unit_price_snapshot = factory.SelfAttribute("item.unit_price")
+    quantity = 10
+    line_total = factory.LazyAttribute(lambda o: o.unit_price_snapshot * o.quantity)
+
+
+class PaymentFactory(factory.django.DjangoModelFactory):
+    """A pending M-Pesa payment for a confirmed order."""
+
+    class Meta:
+        model = Payment
+
+    order = factory.SubFactory(OrderFactory, status=Order.Status.CONFIRMED)
+    method = Payment.Method.ONLINE
+    provider = Payment.Provider.MPESA
+    payer_phone = "+255712345678"
+    amount = factory.SelfAttribute("order.total")

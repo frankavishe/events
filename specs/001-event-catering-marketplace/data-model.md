@@ -81,7 +81,7 @@ vendor's status is `approved`.
 | Field | Type | Rules |
 |-------|------|-------|
 | reference | str unique | `EVT-YYMMDD-XXXX` |
-| event | FK Event | event.client == client |
+| event | FK Event nullable | event.client == client; null only if the event of a cancelled/declined/expired order was deleted |
 | client | FK User | |
 | vendor | FK VendorProfile | approved |
 | status | enum (see state machine) | default pending |
@@ -93,7 +93,7 @@ vendor's status is `approved`.
 | notes | text | |
 
 ### OrderLine
-`order` FK, exactly one of `item` FK / `package` FK, `name_snapshot`, `unit_snapshot`,
+`order` FK, exactly one of `item` FK / `package` FK (set null if the vendor later deletes it; snapshots remain), `name_snapshot`, `unit_snapshot`,
 `unit_price_snapshot`, `quantity` (≥ item.min_quantity; for per-guest packages it is the guest count ≥ min_guests),
 `line_total` = price × quantity.
 
@@ -127,9 +127,14 @@ vendor's status is `approved`.
 | raw_callback | JSON | last callback payload |
 | confirmed_by | FK User nullable | cash only |
 | completed_at | datetime | |
+| bank_name | enum `CRDB` \| `NMB` | bank only; account number and OTP are never stored |
+| needs_review, review_reason | bool, enum `amount_mismatch` \| `order_not_payable` \| `duplicate_reference` \| `no_callback` | for operators |
 
-Constraint: at most one `success` payment per order (partial unique index on `order` where
-`status='success'`).
+Constraints: at most one `success` payment per order (partial unique index on `order` where
+`status='success'`), and one `pending` payment per order and method.
+
+A reported success that cannot be applied (wrong amount, order not payable, reused reference) is
+stored as `failed` with `needs_review`, so every `success` payment has exactly one earning.
 
 ## ledger
 

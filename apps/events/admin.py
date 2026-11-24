@@ -11,3 +11,7 @@ class EventAdmin(admin.ModelAdmin):
     search_fields = ("title", "venue", "client__phone", "client__full_name")
     autocomplete_fields = ("client", "service_area")
     date_hierarchy = "starts_at"
+
+    def has_delete_permission(self, request, obj=None):
+        # Deleting here would skip the active-orders check in services.delete_event.
+        return False

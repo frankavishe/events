@@ -33,6 +33,9 @@ INSTALLED_APPS = [
     "apps.vendors",
     "apps.catalog",
     "apps.events",
+    "apps.orders",
+    "apps.payments",
+    "apps.ledger",
 ]
 
 MIDDLEWARE = [
@@ -108,6 +111,16 @@ CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default=REDIS_URL)
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_BEAT_SCHEDULE = {
+    "expire-pending-orders": {
+        "task": "apps.orders.tasks.expire_pending_orders",
+        "schedule": timedelta(minutes=15),
+    },
+    "reconcile-pending-payments": {
+        "task": "apps.payments.tasks.reconcile_pending_payments",
+        "schedule": timedelta(minutes=15),
+    },
+}
 
 # DRF
 REST_FRAMEWORK = {
@@ -142,8 +155,27 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
+    "ENUM_NAME_OVERRIDES": {
+        "OrderStatusEnum": "apps.orders.models.Order.Status",
+        "PaymentStatusEnum": "apps.payments.models.Payment.Status",
+        "VendorStatusEnum": "apps.vendors.models.VendorProfile.Status",
+        "ChannelEnum": "apps.orders.models.Order.Channel",
+    },
 }
 
-# Integrations (used from later phases; documented in .env.example)
+# Integrations (documented in .env.example)
 PAYMENT_GATEWAY = env("PAYMENT_GATEWAY", default="mock")
+# How long an online payment blocks a new attempt, and when it is flagged for review.
+PAYMENT_PENDING_MINUTES = 30
+AZAMPAY_APP_NAME = env("AZAMPAY_APP_NAME", default="")
+AZAMPAY_CLIENT_ID = env("AZAMPAY_CLIENT_ID", default="")
+AZAMPAY_CLIENT_SECRET = env("AZAMPAY_CLIENT_SECRET", default="")
+AZAMPAY_API_KEY = env("AZAMPAY_API_KEY", default="")
+AZAMPAY_AUTH_BASE_URL = env(
+    "AZAMPAY_AUTH_BASE_URL", default="https://authenticator-sandbox.azampay.co.tz"
+)
+AZAMPAY_CHECKOUT_BASE_URL = env(
+    "AZAMPAY_CHECKOUT_BASE_URL", default="https://sandbox.azampay.co.tz"
+)
+AZAMPAY_CALLBACK_TOKEN = env("AZAMPAY_CALLBACK_TOKEN", default="")
 LLM_PROVIDER = env("LLM_PROVIDER", default="fake")
