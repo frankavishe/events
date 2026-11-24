@@ -6,6 +6,8 @@
 → 200 with body `Y` if the token equals `WHATSAPP_VERIFY_TOKEN`, else 403.
 
 `POST /api/v1/webhooks/whatsapp/`
+- The phone may be hidden: `from`/`wa_id` are then omitted and `from_user_id` (BSUID) identifies the sender.
+  Such users can browse but not book. Replies go to `recipient` instead of `to`.
 - Header `X-Hub-Signature-256: sha256=<hex HMAC-SHA256(raw_body, WHATSAPP_APP_SECRET)>`; mismatch → 403.
 - Body: `entry[].changes[].value.messages[]` with `from`, `id` (wamid), `type`, `text.body`;
   `value.contacts[].profile.name`; `value.statuses[]` (delivery receipts, stored and ignored).
@@ -38,9 +40,14 @@ All tools call service functions; outputs are compact JSON; prices formatted `"T
 | `register_client` | `full_name`, `preferred_language` | user id (phone = sender, implicit) |
 | `create_event` | `event_type`, `title`, `starts_at` (ISO), `venue`, `guest_count`, `service_area?` | event id |
 | `create_order` | `event_id`, `vendor_id`, `lines[{item_id?/package_id?, quantity}]`, `age_confirmed` | `{reference, total, status}` or validation error message |
+| `quote_order` | `event_id`, `vendor_id`, `lines` | `{vendor, lines, total, age_confirmation_required}`; books nothing |
 | `start_payment` | `order_reference`, `method (mobile_money\|cash)`, `provider?`, `phone?` | status text |
 | `get_order_status` | `order_reference?` (default: latest orders of sender) | `[ {reference, status, total, vendor, event_date} ]` |
 | `cancel_order` | `order_reference` | new status |
+
+`create_order` is refused unless the same event, vendor, lines and prices were quoted while answering an
+earlier message, and that reply reached the user before they wrote the current one. A reply containing a
+price that no tool returned (and the user did not write) is corrected once, then replaced by the fallback.
 
 The sender's identity is injected server-side; tools never accept a user id from the model, and order
 tools only see the sender's own orders.

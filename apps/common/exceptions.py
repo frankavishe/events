@@ -33,6 +33,11 @@ def _as_list(value):
     return [str(value)]
 
 
+def error_messages(detail) -> list[str]:
+    """Any APIException detail as flat `field: message` strings (used in chat)."""
+    return _as_list(detail)
+
+
 def _first_code(codes):
     if isinstance(codes, dict):
         for value in codes.values():

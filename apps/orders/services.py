@@ -1,7 +1,9 @@
 """Order business logic shared by REST views (and later the WhatsApp assistant)."""
 
 import secrets
+from dataclasses import dataclass
 from datetime import timedelta
+from decimal import Decimal
 
 from django.db import IntegrityError, transaction
 from django.utils import timezone
@@ -13,7 +15,9 @@ from apps.catalog.services import public_items, public_packages
 from apps.common.exceptions import Conflict
 from apps.common.money import MONEY_DECIMAL_PLACES, MONEY_MAX_DIGITS, to_money
 from apps.common.permissions import is_admin
+from apps.events.models import Event
 from apps.events.services import events_for
+from apps.notifications import enqueue as notify
 from apps.vendors.models import VendorProfile
 from apps.vendors.services import public_vendors
 
@@ -133,7 +137,9 @@ def transition(order: Order, to: str, actor, note: str = "") -> Order:
 
     order.status = to
     order.save(update_fields=["status", "updated_at"])
-    _log(order, source, actor, note)
+    change = _log(order, source, actor, note)
+    if actor is None or actor.pk != order.client_id:  # clients know what they did themselves
+        notify.status_changed(change)
     return order
 
 
@@ -154,8 +160,8 @@ def _check_guards(order, to):
         release_for_cancellation(order)
 
 
-def _log(order, source, actor, note=""):
-    OrderStatusChange.objects.create(
+def _log(order, source, actor, note="") -> OrderStatusChange:
+    return OrderStatusChange.objects.create(
         order=order, from_status=source, to_status=order.status, actor=actor, note=note
     )
 
@@ -181,6 +187,35 @@ def generate_reference() -> str:
     return f"EVT-{timezone.localdate():%y%m%d}-{suffix}"
 
 
+@dataclass(frozen=True)
+class Quote:
+    event: Event
+    vendor: VendorProfile
+    lines: list[OrderLine]  # unsaved
+    total: Decimal
+    contains_alcohol: bool
+
+
+def quote_order(*, client, event_id, vendor_id, lines: list[dict]) -> Quote:
+    """Validate and price an order without placing it. Age is checked when it is placed."""
+    return _quote(events_for(client), event_id, vendor_id, lines)
+
+
+def _quote(events, event_id, vendor_id, lines) -> Quote:
+    event = events.filter(pk=event_id).first()
+    if event is None:
+        raise ValidationError({"event_id": _("Event not found.")})
+    vendor = public_vendors().filter(pk=vendor_id).first()
+    if vendor is None:
+        raise ValidationError({"vendor_id": _("This vendor is not available.")})
+    _check_notice(event, vendor)
+    built, contains_alcohol = _build_lines(vendor, lines)
+    total = sum(line.line_total for line in built)
+    if total >= MAX_TOTAL_EXCLUSIVE:
+        raise ValidationError({"lines": _("The order total is too large.")})
+    return Quote(event, vendor, built, total, contains_alcohol)
+
+
 @transaction.atomic
 def create_order(
     *,
@@ -194,41 +229,31 @@ def create_order(
 ) -> Order:
     """Place an order. Each line is `{"item_id" or "package_id": UUID, "quantity": int}`."""
     # Locked, so the event cannot be moved or deleted while the order is being placed.
-    event = events_for(client).select_for_update().filter(pk=event_id).first()
-    if event is None:
-        raise ValidationError({"event_id": _("Event not found.")})
-    vendor = public_vendors().filter(pk=vendor_id).first()
-    if vendor is None:
-        raise ValidationError({"vendor_id": _("This vendor is not available.")})
-    _check_notice(event, vendor)
-
-    built, contains_alcohol = _build_lines(vendor, lines)
-    if contains_alcohol and not age_confirmed:
+    quote = _quote(events_for(client).select_for_update(), event_id, vendor_id, lines)
+    if quote.contains_alcohol and not age_confirmed:
         raise ValidationError(
             {"age_confirmed": _("Confirm that you are 18 or older to order alcohol.")}
         )
-    total = sum(line.line_total for line in built)
-    if total >= MAX_TOTAL_EXCLUSIVE:
-        raise ValidationError({"lines": _("The order total is too large.")})
 
     order = _insert_order(
         Order(
             client=client,
-            event=event,
-            vendor=vendor,
-            subtotal=total,
-            total=total,
-            contains_alcohol=contains_alcohol,
+            event=quote.event,
+            vendor=quote.vendor,
+            subtotal=quote.total,
+            total=quote.total,
+            contains_alcohol=quote.contains_alcohol,
             age_confirmed=age_confirmed,
             channel=channel,
             notes=notes,
             expires_at=timezone.now() + EXPIRY,
         )
     )
-    for line in built:  # one by one, so created_at keeps the given order
+    for line in quote.lines:  # one by one, so created_at keeps the given order
         line.order = order
         line.save()
     _log(order, "", client)
+    notify.new_order(order)
     return order
 
 

@@ -31,6 +31,6 @@ def test_schedule_points_at_real_tasks():
     from config.celery import app
 
     app.loader.import_default_modules()
-    assert len(settings.CELERY_BEAT_SCHEDULE) == 2
+    assert len(settings.CELERY_BEAT_SCHEDULE) == 3
     for entry in settings.CELERY_BEAT_SCHEDULE.values():
         assert entry["task"] in app.tasks

@@ -11,10 +11,12 @@ def register_client(
     *,
     phone: str,
     full_name: str,
-    password: str,
+    password: str | None,
     email: str | None = None,
     preferred_language: str = User.Language.EN,
+    created_via: str = User.CreatedVia.API,
 ) -> User:
+    """`password=None` creates a user who cannot sign in to the API (WhatsApp)."""
     return User.objects.create_user(
         phone=phone,
         full_name=full_name,
@@ -22,7 +24,7 @@ def register_client(
         email=email,
         preferred_language=preferred_language,
         role=User.Role.CLIENT,
-        created_via=User.CreatedVia.API,
+        created_via=created_via,
     )
 
 

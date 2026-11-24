@@ -14,6 +14,7 @@ from django.utils.translation import gettext as _
 
 from apps.common.exceptions import Conflict
 from apps.ledger import services as ledger
+from apps.notifications import enqueue as notify
 from apps.orders import services as orders
 from apps.orders.models import Order
 
@@ -160,8 +161,12 @@ def handle_gateway_result(
     payment.raw_callback = raw
     reference = reference[:128]
     if not success:
+        first_report = payment.status == Status.PENDING
         payment.status = Status.FAILED
         payment.save()
+        # Not for repeats, or for a stale attempt after the order was paid or cancelled.
+        if first_report and order.status in orders.PAYABLE:
+            notify.payment_failed(payment)
         return payment
 
     problem = _problem(order, payment, amount, reference)

@@ -48,8 +48,10 @@ endpoints and versions.
 
 ## R5. LLM — Google Gemini
 - **Decision**: `google-genai` SDK, model from env `GEMINI_MODEL` (default a current "flash" model,
-  e.g. `gemini-2.5-flash`), manual function-calling loop (max 5 tool rounds) so every tool call is
-  logged and testable. Temperature low (0.2).
+  `gemini-3.8-flash`; 2.5 is closed to new projects, checked 2026-11-24), manual function-calling loop (max 5 tool rounds) so every tool call is
+  logged and testable. Model default temperature.
+- **Thought signatures**: Gemini 3 rejects function calls replayed without them or out of order, so each
+  model message is stored whole and replayed unchanged.
 - **Grounding**: The system prompt (bilingual) states that the assistant may only state items,
   prices, vendors and statuses returned by tools, and must say "not available" otherwise. Tools return
   compact JSON from services. Price strings are formatted by our code (`TZS 15,000`), not the model.
@@ -64,6 +66,7 @@ endpoints and versions.
   `POST` verified with `X-Hub-Signature-256` HMAC-SHA256 of the raw body using the app secret.
   Store the inbound `wamid` with a unique constraint (dedupe retries), enqueue a Celery task, and return 200.
   Send via `POST https://graph.facebook.com/{GRAPH_VERSION}/{PHONE_NUMBER_ID}/messages`.
+- **Version**: `v26.0` (v21.0 is removed 2027-01-21). Not yet tried against the live API.
 - **24-hour rule**: Free-form replies are only allowed within 24 h of the user's last message.
   Proactive vendor/client notifications (FR-027) use pre-approved **template messages**
   (names configured in env); free-form messages are used when inside the window.

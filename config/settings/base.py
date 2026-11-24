@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     "apps.orders",
     "apps.payments",
     "apps.ledger",
+    "apps.notifications",
+    "apps.chatbot",
 ]
 
 MIDDLEWARE = [
@@ -120,6 +122,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.payments.tasks.reconcile_pending_payments",
         "schedule": timedelta(minutes=15),
     },
+    "resume-stuck-messages": {
+        "task": "apps.chatbot.tasks.resume_stuck_messages",
+        "schedule": timedelta(minutes=1),
+    },
 }
 
 # DRF
@@ -178,4 +184,16 @@ AZAMPAY_CHECKOUT_BASE_URL = env(
     "AZAMPAY_CHECKOUT_BASE_URL", default="https://sandbox.azampay.co.tz"
 )
 AZAMPAY_CALLBACK_TOKEN = env("AZAMPAY_CALLBACK_TOKEN", default="")
+MESSAGING_PROVIDER = env("MESSAGING_PROVIDER", default="fake")
+WHATSAPP_ACCESS_TOKEN = env("WHATSAPP_ACCESS_TOKEN", default="")
+WHATSAPP_PHONE_NUMBER_ID = env("WHATSAPP_PHONE_NUMBER_ID", default="")
+WHATSAPP_VERIFY_TOKEN = env("WHATSAPP_VERIFY_TOKEN", default="")
+WHATSAPP_APP_SECRET = env("WHATSAPP_APP_SECRET", default="")
+WHATSAPP_GRAPH_VERSION = env("WHATSAPP_GRAPH_VERSION", default="v26.0")
+# Approved templates (en and sw) for messages outside the 24 h window; empty = not sent.
+WHATSAPP_TEMPLATE_NEW_ORDER = env("WHATSAPP_TEMPLATE_NEW_ORDER", default="")
+WHATSAPP_TEMPLATE_ORDER_STATUS = env("WHATSAPP_TEMPLATE_ORDER_STATUS", default="")
+WHATSAPP_TEMPLATE_PAYMENT_FAILED = env("WHATSAPP_TEMPLATE_PAYMENT_FAILED", default="")
 LLM_PROVIDER = env("LLM_PROVIDER", default="fake")
+GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
+GEMINI_MODEL = env("GEMINI_MODEL", default="gemini-3.8-flash")

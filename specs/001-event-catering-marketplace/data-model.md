@@ -157,11 +157,13 @@ Balance (computed, not stored): Σ net (online, not reversed) − Σ commission 
 ## chatbot
 
 ### Conversation
-`wa_id` (WhatsApp phone) unique, `user` FK nullable, `language` (`en`|`sw`),
-`last_inbound_at` (for 24 h window), `state` JSON (draft booking: event details, selected lines).
+`wa_id` (WhatsApp phone) and `bsuid` (Meta business-scoped id), each unique and nullable, at least one set; `user` FK nullable, `language` (`en`|`sw`),
+`last_inbound_at` (for 24 h window), `state` JSON (pending quote, last order),
+`processing_until` (lease of the worker answering it).
 
 ### ChatMessage
-`conversation` FK, `direction` (`in`|`out`), `wa_message_id` unique nullable (dedupe),
+Sequential integer `id` (exception to the UUID rule: order matters). `conversation` FK, `reply_to` FK self
+(the inbound message being answered), `message_type`, `attempts`, `delivery_status`, `direction` (`in`|`out`), `wa_message_id` unique nullable (dedupe),
 `text`, `role` (`user`|`model`|`tool`), `tool_name`, `payload` JSON, `status`
-(`received`|`processed`|`failed`|`sent`).
+(`received`|`processed`|`failed`|`queued`|`sent`).
 History sent to the LLM = last 20 messages.

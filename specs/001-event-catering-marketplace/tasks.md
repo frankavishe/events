@@ -126,21 +126,21 @@ delivery phase. Implementation stops there until the project owner has reviewed 
 **Independent Test**: quickstart scenario 6.
 
 ### Tests
-- [ ] T052 [P] [US4] Webhook tests (GET verify, bad signature 403, dedupe by wamid, non-text reply, returns 200 + enqueues) in tests/chatbot/test_webhook.py with payload fixtures in tests/chatbot/fixtures/
-- [ ] T053 [P] [US4] Tool unit tests (each tool calls services, scoped to sender, price formatting, validation errors returned as messages) in tests/chatbot/test_tools.py
-- [ ] T054 [P] [US4] Agent loop tests with FakeLLM (tool round-trips, max rounds, LLM failure → bilingual fallback, history window 20) in tests/chatbot/test_agent.py
-- [ ] T055 [P] [US4] End-to-end chat booking test (unknown number → register → event → order → cash) in tests/chatbot/test_booking_flow.py
-- [ ] T056 [P] [US4] MessagingClient tests with respx (text send, template send, 24 h window choice) in tests/notifications/test_whatsapp_client.py
+- [x] T052 [P] [US4] Webhook tests (GET verify, bad signature 403, dedupe by wamid, non-text reply, returns 200 + enqueues) in tests/chatbot/test_webhook.py with payload fixtures in tests/chatbot/fixtures/
+- [x] T053 [P] [US4] Tool unit tests (each tool calls services, scoped to sender, price formatting, validation errors returned as messages) in tests/chatbot/test_tools.py
+- [x] T054 [P] [US4] Agent loop tests with FakeLLM (tool round-trips, max rounds, LLM failure → bilingual fallback, history window 20) in tests/chatbot/test_agent.py
+- [x] T055 [P] [US4] End-to-end chat booking test (unknown number → register → event → order → cash) in tests/chatbot/test_booking_flow.py
+- [x] T056 [P] [US4] MessagingClient tests with respx (text send, template send, 24 h window choice) in tests/notifications/test_whatsapp_client.py
 
 ### Implementation
-- [ ] T057 [US4] Conversation and ChatMessage models + migration in apps/chatbot/models.py
-- [ ] T058 [P] [US4] MessagingClient protocol, WhatsAppCloudClient (httpx), FakeMessagingClient in apps/notifications/clients.py
-- [ ] T059 [P] [US4] LLMClient protocol, GeminiClient (google-genai function calling), FakeLLM in apps/chatbot/llm/
-- [ ] T060 [US4] Tool declarations + implementations per contracts/webhooks.md in apps/chatbot/tools.py
-- [ ] T061 [US4] Bilingual grounded system prompt in apps/chatbot/prompts.py and agent loop (history, tool dispatch, language update) in apps/chatbot/agent.py
-- [ ] T062 [US4] Webhook view (verify + HMAC + persist + enqueue) in apps/chatbot/views.py; Celery task process_message in apps/chatbot/tasks.py
-- [ ] T063 [US4] Notification tasks (vendor: new order; client: status change, payment result) wired via orders/payments services in apps/notifications/tasks.py
-- [ ] T064 [US4] Grounding evaluation script with 50 EN/SW questions (SC-004, SC-006) in scripts/eval_chatbot.py (manual run with a real Gemini key)
+- [x] T057 [US4] Conversation and ChatMessage models + migration in apps/chatbot/models.py
+- [x] T058 [P] [US4] MessagingClient protocol, WhatsAppCloudClient (httpx), FakeMessagingClient in apps/notifications/clients.py
+- [x] T059 [P] [US4] LLMClient protocol, GeminiClient (google-genai function calling), FakeLLM in apps/chatbot/llm/
+- [x] T060 [US4] Tool declarations + implementations per contracts/webhooks.md in apps/chatbot/tools.py
+- [x] T061 [US4] Bilingual grounded system prompt in apps/chatbot/prompts.py and agent loop (history, tool dispatch, language update) in apps/chatbot/agent.py
+- [x] T062 [US4] Webhook view (verify + HMAC + persist + enqueue) in apps/chatbot/views.py; Celery task process_message in apps/chatbot/tasks.py
+- [x] T063 [US4] Notification tasks (vendor: new order; client: status change, payment result) wired via orders/payments services in apps/notifications/tasks.py
+- [x] T064 [US4] Grounding evaluation script with 50 EN/SW questions (SC-004, SC-006) in scripts/eval_chatbot.py (manual run with a real Gemini key)
 
 **🛑 REVIEW & COMMIT — Delivery Phase 4** (+ live test with Meta test number via ngrok)
 

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Python 3.12+ and `uv`; Docker Desktop (Postgres 16 + Redis 7).
-- Copy `.env.example` → `.env`. For local dev keep `PAYMENT_GATEWAY=mock` and `LLM_PROVIDER=fake`
+- Copy `.env.example` → `.env`. For local dev keep `PAYMENT_GATEWAY=mock`, `MESSAGING_PROVIDER=fake` and `LLM_PROVIDER=fake`
   until real credentials exist.
 
 ## Setup
@@ -43,4 +43,5 @@ uv run python manage.py makemigrations --check --dry-run
 6. **WhatsApp (US4)**: post the sample payloads in `tests/chatbot/fixtures/` to `/api/v1/webhooks/whatsapp/`
    with a valid signature; with `LLM_PROVIDER=gemini` and a real key, ask "Bei ya soda ni kiasi gani?"
    → Swahili reply with the catalog price. Live test: ngrok + Meta test number.
+   Evaluation: `uv run python -m scripts.eval_chatbot` (needs `GEMINI_API_KEY`; changes no data).
 7. **Payout (US5)**: admin `POST /admin/payouts/` ≤ balance → 201; > balance → 400.
