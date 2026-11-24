@@ -64,7 +64,8 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
         WHATSAPP = "whatsapp", _("WhatsApp")
 
     phone = models.CharField(_("phone"), max_length=16, unique=True, help_text="E.164")
-    email = models.EmailField(_("email"), blank=True, null=True)
+    # NULL (not "") for "no email", so the unique constraint allows many users without one.
+    email = models.EmailField(_("email"), blank=True, null=True)  # noqa: DJ001
     full_name = models.CharField(_("full name"), max_length=150)
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.CLIENT)
     preferred_language = models.CharField(

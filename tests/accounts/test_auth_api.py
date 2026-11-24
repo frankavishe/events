@@ -145,7 +145,9 @@ class TestRegister:
 class TestToken:
     @pytest.fixture
     def user(self):
-        return UserFactory(phone="+255712345678", email="asha@example.com", password=STRONG_PASSWORD)
+        return UserFactory(
+            phone="+255712345678", email="asha@example.com", password=STRONG_PASSWORD
+        )
 
     @pytest.mark.parametrize(
         "login", ["+255712345678", "0712345678", "asha@example.com", "ASHA@example.com"]
@@ -230,9 +232,7 @@ class TestMe:
 
     def test_patch_cannot_change_phone_or_role(self, auth_client):
         user = UserFactory(phone="+255712345678")
-        auth_client(user).patch(
-            ME_URL, {"phone": "+255799999999", "role": "admin"}, format="json"
-        )
+        auth_client(user).patch(ME_URL, {"phone": "+255799999999", "role": "admin"}, format="json")
         user.refresh_from_db()
         assert user.phone == "+255712345678"
         assert user.role == User.Role.CLIENT

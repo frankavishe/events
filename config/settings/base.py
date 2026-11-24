@@ -30,6 +30,9 @@ INSTALLED_APPS = [
     # local
     "apps.common",
     "apps.accounts",
+    "apps.vendors",
+    "apps.catalog",
+    "apps.events",
 ]
 
 MIDDLEWARE = [

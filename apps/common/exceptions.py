@@ -25,8 +25,11 @@ class GatewayError(exceptions.APIException):
 
 
 def _as_list(value):
+    """Flatten errors to strings; nested (list-of-object) errors become `field: message`."""
     if isinstance(value, list):
-        return [str(v) for v in value]
+        return [message for v in value for message in _as_list(v)]
+    if isinstance(value, dict):
+        return [f"{key}: {message}" for key, v in value.items() for message in _as_list(v)]
     return [str(value)]
 
 

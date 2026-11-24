@@ -8,7 +8,11 @@ from .models import User
 
 @transaction.atomic
 def register_client(
-    *, phone: str, full_name: str, password: str, email: str | None = None,
+    *,
+    phone: str,
+    full_name: str,
+    password: str,
+    email: str | None = None,
     preferred_language: str = User.Language.EN,
 ) -> User:
     return User.objects.create_user(

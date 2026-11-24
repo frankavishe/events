@@ -24,25 +24,25 @@ delivery phase. Implementation stops there until the project owner has reviewed 
 
 ## Phase 1: Setup (Shared Infrastructure) — Delivery Phase 1
 
-- [ ] T001 Initialize uv project with dependencies from plan.md and ruff/pytest config in pyproject.toml
-- [ ] T002 Create Django project `config/` with split settings in config/settings/base.py, dev.py, test.py, prod.py (django-environ, TZ Africa/Dar_es_Salaam, LANGUAGES en/sw)
-- [ ] T003 [P] Create docker-compose.yml with postgres:16 and redis:7 services
-- [ ] T004 [P] Create .env.example documenting every variable (DB, Redis, JWT, AZAMPAY_*, WHATSAPP_*, GEMINI_*, PAYMENT_GATEWAY, LLM_PROVIDER)
-- [ ] T005 [P] Create .gitignore (.env, media/, __pycache__, .venv, .claude/settings.local.json)
-- [ ] T006 Configure Celery in config/celery.py and config/__init__.py; CELERY_TASK_ALWAYS_EAGER in test settings
-- [ ] T007 Configure DRF, SimpleJWT, drf-spectacular, django-filter, and URL routing (/api/v1/, /api/schema/, /api/docs/) in config/settings/base.py and config/urls.py
-- [ ] T008 [P] Create tests/conftest.py with api_client fixture and pytest-django DB settings
+- [x] T001 Initialize uv project with dependencies from plan.md and ruff/pytest config in pyproject.toml
+- [x] T002 Create Django project `config/` with split settings in config/settings/base.py, dev.py, test.py, prod.py (django-environ, TZ Africa/Dar_es_Salaam, LANGUAGES en/sw)
+- [x] T003 [P] Create docker-compose.yml with postgres:16 and redis:7 services
+- [x] T004 [P] Create .env.example documenting every variable (DB, Redis, JWT, AZAMPAY_*, WHATSAPP_*, GEMINI_*, PAYMENT_GATEWAY, LLM_PROVIDER)
+- [x] T005 [P] Create .gitignore (.env, media/, __pycache__, .venv, .claude/settings.local.json)
+- [x] T006 Configure Celery in config/celery.py and config/__init__.py; CELERY_TASK_ALWAYS_EAGER in test settings
+- [x] T007 Configure DRF, SimpleJWT, drf-spectacular, django-filter, and URL routing (/api/v1/, /api/schema/, /api/docs/) in config/settings/base.py and config/urls.py
+- [x] T008 [P] Create tests/conftest.py with api_client fixture and pytest-django DB settings
 
 ## Phase 2: Foundational (Blocking Prerequisites) — Delivery Phase 1
 
-- [ ] T009 [P] Write tests for BaseModel, money helpers (round half-up, TZS formatting), and phone normalization in tests/common/test_utils.py
-- [ ] T010 Implement apps/common/ (BaseModel UUID+timestamps, money.py, phone.py, pagination.py, exceptions handler with error shape from contracts/rest-api.md)
-- [ ] T011 [P] Write tests for registration, token login by phone or email, /me/ in tests/accounts/test_auth_api.py
-- [ ] T012 Implement custom User model and manager (phone login, role, preferred_language, created_via) in apps/accounts/models.py; set AUTH_USER_MODEL; migration
-- [ ] T013 Implement auth serializers/views (/auth/register/, /auth/token/, /auth/token/refresh/, /me/) in apps/accounts/
-- [ ] T014 [P] Implement role permission classes IsClient, IsVendor, IsApprovedVendor, IsAdmin in apps/common/permissions.py with tests in tests/common/test_permissions.py
-- [ ] T015 Create tests/factories.py (UserFactory and role variants)
-- [ ] T016 Register User in admin (apps/accounts/admin.py); verify `/api/docs/` renders
+- [x] T009 [P] Write tests for BaseModel, money helpers (round half-up, TZS formatting), and phone normalization in tests/common/test_utils.py
+- [x] T010 Implement apps/common/ (BaseModel UUID+timestamps, money.py, phone.py, pagination.py, exceptions handler with error shape from contracts/rest-api.md)
+- [x] T011 [P] Write tests for registration, token login by phone or email, /me/ in tests/accounts/test_auth_api.py
+- [x] T012 Implement custom User model and manager (phone login, role, preferred_language, created_via) in apps/accounts/models.py; set AUTH_USER_MODEL; migration
+- [x] T013 Implement auth serializers/views (/auth/register/, /auth/token/, /auth/token/refresh/, /me/) in apps/accounts/
+- [x] T014 [P] Implement role permission classes IsClient, IsVendor, IsApprovedVendor, IsAdmin in apps/common/permissions.py with tests in tests/common/test_permissions.py
+- [x] T015 Create tests/factories.py (UserFactory and role variants)
+- [x] T016 Register User in admin (apps/accounts/admin.py); verify `/api/docs/` renders
 
 **🛑 REVIEW & COMMIT — Delivery Phase 1** (gate: pytest, ruff, `makemigrations --check`)
 
@@ -54,23 +54,23 @@ delivery phase. Implementation stops there until the project owner has reviewed 
 **Independent Test**: quickstart scenario 1.
 
 ### Tests (write first, must fail)
-- [ ] T017 [P] [US1] Vendor registration + admin approve/reject/suspend tests in tests/vendors/test_vendor_api.py
-- [ ] T018 [P] [US1] Vendor item/package CRUD + ownership isolation + validation (alcoholic only for drinks, category kind match) tests in tests/catalog/test_vendor_catalog_api.py
-- [ ] T019 [P] [US1] Public catalog visibility and filter tests (kind, is_alcoholic, category, vendor, service_area, price range, search) in tests/catalog/test_public_catalog_api.py
+- [x] T017 [P] [US1] Vendor registration + admin approve/reject/suspend tests in tests/vendors/test_vendor_api.py
+- [x] T018 [P] [US1] Vendor item/package CRUD + ownership isolation + validation (alcoholic only for drinks, category kind match) tests in tests/catalog/test_vendor_catalog_api.py
+- [x] T019 [P] [US1] Public catalog visibility and filter tests (kind, is_alcoholic, category, vendor, service_area, price range, search) in tests/catalog/test_public_catalog_api.py
 
 ### Implementation
-- [ ] T020 [P] [US1] VendorProfile and ServiceArea models + migration in apps/vendors/models.py
-- [ ] T021 [P] [US1] Category, Item, Package, PackageItem models + migration + category seed data migration in apps/catalog/models.py
-- [ ] T022 [US1] Vendor services (register_vendor, approve, reject, suspend) in apps/vendors/services.py
-- [ ] T023 [US1] Vendor endpoints (/auth/register/vendor/, /vendor/profile/, /vendors/, /service-areas/, /admin/vendors/{id}/approve|reject|suspend/) in apps/vendors/views.py, serializers.py, urls.py
-- [ ] T024 [US1] Catalog query services (public_items, public_packages, search) in apps/catalog/services.py
-- [ ] T025 [US1] Vendor catalog endpoints (/vendor/items/, /vendor/packages/) scoped to request vendor in apps/catalog/views.py
-- [ ] T026 [US1] Public catalog endpoints + FilterSets (/categories/, /items/, /packages/) in apps/catalog/views.py, filters.py
-- [ ] T027 [P] [US1] Admin registrations for vendors and catalog with approve action in apps/vendors/admin.py, apps/catalog/admin.py
+- [x] T020 [P] [US1] VendorProfile and ServiceArea models + migration in apps/vendors/models.py
+- [x] T021 [P] [US1] Category, Item, Package, PackageItem models + migration + category seed data migration in apps/catalog/models.py
+- [x] T022 [US1] Vendor services (register_vendor, approve, reject, suspend) in apps/vendors/services.py
+- [x] T023 [US1] Vendor endpoints (/auth/register/vendor/, /vendor/profile/, /vendors/, /service-areas/, /admin/vendors/{id}/approve|reject|suspend/) in apps/vendors/views.py, serializers.py, urls.py
+- [x] T024 [US1] Catalog query services (public_items, public_packages, search) in apps/catalog/services.py
+- [x] T025 [US1] Vendor catalog endpoints (/vendor/items/, /vendor/packages/) scoped to request vendor in apps/catalog/views.py
+- [x] T026 [US1] Public catalog endpoints + FilterSets (/categories/, /items/, /packages/) in apps/catalog/views.py, filters.py
+- [x] T027 [P] [US1] Admin registrations for vendors and catalog with approve action in apps/vendors/admin.py, apps/catalog/admin.py
 
 ### Events (needed by US2, delivered with Phase 2)
-- [ ] T028 [P] [US2] Event CRUD + ownership + future-date tests in tests/events/test_events_api.py
-- [ ] T029 [US2] Event model + migration, serializers, /events/ viewset in apps/events/
+- [x] T028 [P] [US2] Event CRUD + ownership + future-date tests in tests/events/test_events_api.py
+- [x] T029 [US2] Event model + migration, serializers, /events/ viewset in apps/events/
 
 **🛑 REVIEW & COMMIT — Delivery Phase 2**
 

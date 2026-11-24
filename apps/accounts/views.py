@@ -39,6 +39,10 @@ class TokenObtainView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    def get_authenticate_header(self, request):
+        # Without authenticators DRF would turn a failed login into 403 instead of 401.
+        return 'Bearer realm="api"'
+
     @extend_schema(
         request=LoginTokenSerializer, responses={200: TokenPairSerializer}, tags=["auth"]
     )

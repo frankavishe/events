@@ -5,7 +5,7 @@ import os
 os.environ.setdefault("DJANGO_SECRET_KEY", "test-secret-key-not-for-production")
 os.environ.setdefault("DATABASE_URL", "postgres://events:events@localhost:5435/events")
 
-from .base import *  # noqa: E402, F403
+from .base import *  # noqa: F403
 
 DEBUG = False
 ALLOWED_HOSTS = ["testserver", "localhost"]

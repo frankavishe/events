@@ -4,7 +4,12 @@ import pytest
 from django.contrib.auth.models import AnonymousUser
 
 from apps.common.permissions import IsAdmin, IsApprovedVendor, IsClient, IsVendor
-from tests.factories import AdminFactory, UserFactory, VendorUserFactory
+from tests.factories import (
+    AdminFactory,
+    UserFactory,
+    VendorProfileFactory,
+    VendorUserFactory,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -50,12 +55,9 @@ class TestIsApprovedVendor:
         assert check(IsApprovedVendor, VendorUserFactory()) is False
 
     def test_uses_vendor_profile_status(self):
-        # VendorProfile arrives in Delivery Phase 2; the permission reads `user.vendor_profile.status`.
-        user = VendorUserFactory()
-        user.vendor_profile = SimpleNamespace(status="pending")
-        assert check(IsApprovedVendor, user) is False
-        user.vendor_profile = SimpleNamespace(status="approved")
-        assert check(IsApprovedVendor, user) is True
+        for status in ("pending", "suspended", "rejected"):
+            assert check(IsApprovedVendor, VendorProfileFactory(status=status).user) is False
+        assert check(IsApprovedVendor, VendorProfileFactory(status="approved").user) is True
 
     def test_denial_message_is_explanatory(self):
         assert "approved" in IsApprovedVendor.message.lower()
