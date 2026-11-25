@@ -3,7 +3,10 @@ from decimal import Decimal
 
 import pytest
 from django.db import IntegrityError, transaction
+from django.utils import timezone
+from freezegun import freeze_time
 
+from apps.catalog import services
 from apps.catalog.models import Category, Item, Package
 from tests.factories import (
     CategoryFactory,
@@ -194,6 +197,15 @@ class TestPackages:
         assert {i["item"]["id"] for i in body["items"]} == {str(food.pk), str(beer.pk)}
         assert body["items"][0]["quantity_note"] == "1 per guest"
         assert Package.objects.get().vendor == vendor
+
+    def test_items_keep_the_given_order_when_the_clock_stands_still(self, vendor):
+        items = ItemFactory.create_batch(6, vendor=vendor)
+        with freeze_time(timezone.now()):
+            package = services.save_package(
+                Package(vendor=vendor, name="Harusi", pricing="flat", price=Decimal("1000")),
+                items=[{"item": item} for item in items],
+            )
+        assert [entry.item for entry in package.package_items.all()] == items
 
     def test_rejects_other_vendors_item(self, auth_client, vendor):
         response = auth_client(vendor.user).post(

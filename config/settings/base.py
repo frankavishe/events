@@ -41,7 +41,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "apps.common.logs.RequestIdMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -144,6 +146,49 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "apps.common.exceptions.api_exception_handler",
     "COERCE_DECIMAL_TO_STRING": True,
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    # See apps/common/throttling.py.
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": env("THROTTLE_ANON", default="300/min"),
+        "user": env("THROTTLE_USER", default="300/min"),
+        "login": env("THROTTLE_LOGIN", default="10/min"),
+        "login_ip": env("THROTTLE_LOGIN_IP", default="60/min"),
+        "register": env("THROTTLE_REGISTER", default="60/hour"),
+        "webhook_rejected": env("THROTTLE_WEBHOOK_REJECTED", default="30/min"),
+    },
+    # Proxies in front of the app; 0 ignores X-Forwarded-For, which clients can forge.
+    "NUM_PROXIES": env.int("DJANGO_NUM_PROXIES", default=0),
+}
+
+# Logging
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {"request_id": {"()": "apps.common.logs.RequestIdFilter"}},
+    "formatters": {
+        "text": {"()": "apps.common.logs.TextFormatter"},
+        "json": {"()": "apps.common.logs.JsonFormatter"},
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "filters": ["request_id"],
+            "formatter": "text",
+        }
+    },
+    "root": {"handlers": ["console"], "level": env("LOG_LEVEL", default="INFO")},
+    "loggers": {
+        # Without their own handlers, so that everything is redacted by our formatters.
+        "django": {"handlers": [], "level": "INFO", "propagate": True},
+        "django.server": {"handlers": [], "level": "WARNING", "propagate": True},
+        # These log full URLs of outgoing requests.
+        "httpx": {"level": "WARNING"},
+        "httpcore": {"level": "WARNING"},
+    },
 }
 
 SIMPLE_JWT = {
@@ -166,6 +211,8 @@ SPECTACULAR_SETTINGS = {
         "PaymentStatusEnum": "apps.payments.models.Payment.Status",
         "VendorStatusEnum": "apps.vendors.models.VendorProfile.Status",
         "ChannelEnum": "apps.orders.models.Order.Channel",
+        "PaymentMethodEnum": "apps.payments.models.Payment.Method",
+        "PayoutMethodEnum": "apps.vendors.models.VendorProfile.PayoutMethod",
     },
 }
 

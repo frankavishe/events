@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.common.permissions import IsAdmin, IsClient, IsVendor
+from apps.common.throttling import count_rejected_webhook
 from apps.orders.models import Order
 from apps.orders.serializers import OrderSerializer
 from apps.orders.services import orders_for
@@ -100,6 +101,7 @@ class AzamPayCallbackView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = []  # only rejected requests are limited
 
     @extend_schema(
         request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT}, tags=["webhooks"]
@@ -107,6 +109,7 @@ class AzamPayCallbackView(APIView):
     def post(self, request, token):
         expected = settings.AZAMPAY_CALLBACK_TOKEN
         if not expected or not constant_time_compare(token, expected):
+            count_rejected_webhook(request)
             raise Http404
         self._process(request.data)
         return Response({"received": True})

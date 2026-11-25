@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.common.exceptions import Conflict
+from apps.common.logs import log_event
 from apps.ledger import services as ledger
 from apps.notifications import enqueue as notify
 from apps.orders import services as orders
@@ -25,6 +26,17 @@ logger = logging.getLogger(__name__)
 
 Method, Provider, Status = Payment.Method, Payment.Provider, Payment.Status
 ReviewReason = Payment.ReviewReason
+
+
+def _log(event, payment):
+    log_event(
+        logger,
+        event,
+        payment=payment.pk,
+        order=payment.order_id,
+        method=payment.method,
+        provider=payment.provider,
+    )
 
 
 def payments_for(user):
@@ -49,6 +61,7 @@ def start_payment(
         return _start_cash(order)
 
     payment = _open_online(order, provider=provider, phone=phone, bank_name=bank_name)
+    _log("payment.started", payment)
     # Outside any transaction: no row stays locked during the network call.
     try:
         gateway = get_gateway()
@@ -62,6 +75,7 @@ def start_payment(
     except Exception:
         # If the request did reach the gateway, a later success callback still applies.
         _update_if_pending(payment, status=Status.FAILED)
+        _log("payment.failed", payment)
         raise
     if reference:
         _store_reference(payment, reference)
@@ -74,9 +88,11 @@ def _start_cash(order) -> Payment:
     order = orders.lock_order(order.pk)
     _block_if_paying_online(order)
     order = orders.transition(order, Order.Status.AWAITING_CASH, order.client)
-    return Payment.objects.create(
+    payment = Payment.objects.create(
         order=order, method=Method.CASH, provider=Provider.CASH, amount=order.total
     )
+    _log("payment.started", payment)
+    return payment
 
 
 @transaction.atomic
@@ -164,6 +180,7 @@ def handle_gateway_result(
         first_report = payment.status == Status.PENDING
         payment.status = Status.FAILED
         payment.save()
+        _log("payment.failed", payment)
         # Not for repeats, or for a stale attempt after the order was paid or cancelled.
         if first_report and order.status in orders.PAYABLE:
             notify.payment_failed(payment)
@@ -202,6 +219,7 @@ def _settle(order, payment, *, actor):
     payment.save()
     payment.order = orders.transition(order, Order.Status.PAID, actor)
     ledger.record_earning(payment)
+    _log("payment.succeeded", payment)
 
 
 @transaction.atomic
@@ -223,6 +241,7 @@ def refund(order: Order, actor, note: str) -> Order:
     """Record a refund made outside the system and reverse the vendor's earning."""
     order = orders.transition(order, Order.Status.REFUNDED, actor, note)
     ledger.reverse_earning(order)
+    log_event(logger, "payment.refunded", order=order.pk)
     return order
 
 

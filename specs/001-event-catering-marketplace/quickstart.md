@@ -11,11 +11,13 @@ docker compose up -d db redis
 uv sync
 uv run python manage.py migrate
 uv run python manage.py createsuperuser
-uv run python manage.py seed_demo        # Phase 5: demo vendors, items, areas
+uv run python manage.py seed_demo        # demo vendors, items, areas
 uv run python manage.py runserver
 uv run celery -A config worker -l info -P solo   # separate terminal (Windows needs -P solo)
 uv run celery -A config beat -l info              # separate terminal
 ```
+Or everything in containers: `docker compose up -d --build`.
+
 API docs: http://localhost:8000/api/docs/
 
 ## Quality gate (every phase)

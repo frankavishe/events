@@ -151,18 +151,18 @@ delivery phase. Implementation stops there until the project owner has reviewed 
 **Goal**: Vendors see earnings and balance. Admins manage commission and payouts.
 **Independent Test**: quickstart scenario 7.
 
-- [ ] T065 [P] [US5] Tests for /vendor/earnings/ summary, /vendor/payouts/, /admin/commission/, /admin/payouts/ (over-balance rejected), /admin/vendors/{id}/balance/ in tests/ledger/test_ledger_api.py
-- [ ] T066 [US5] Ledger serializers, views, urls in apps/ledger/
-- [ ] T067 [P] [US5] Ledger admin (earnings read-only, payouts, commission history) in apps/ledger/admin.py
+- [x] T065 [P] [US5] Tests for /vendor/earnings/ summary, /vendor/payouts/, /admin/commission/, /admin/payouts/ (over-balance rejected), /admin/vendors/{id}/balance/ in tests/ledger/test_ledger_api.py
+- [x] T066 [US5] Ledger serializers, views, urls in apps/ledger/
+- [x] T067 [P] [US5] Ledger admin (earnings read-only, payouts, commission history) in apps/ledger/admin.py
 
 ## Phase 8: Polish & Cross-Cutting — Delivery Phase 5
 
-- [ ] T068 [P] DRF throttling (anon/user, stricter on auth and webhooks) in config/settings/base.py with tests
-- [ ] T069 [P] seed_demo management command (areas, vendors, Swahili/English items, packages) in apps/common/management/commands/seed_demo.py
-- [ ] T070 [P] Structured logging (request id, payment/chat events) in config/settings/base.py
-- [ ] T071 [P] Dockerfile + web/worker/beat services in docker-compose.yml
-- [ ] T072 README.md with setup, env, architecture, and phase notes
-- [ ] T073 Run full quickstart.md validation; generate OpenAPI file to docs/openapi.yaml
+- [x] T068 [P] DRF throttling (anon/user, stricter on auth and webhooks) in config/settings/base.py with tests
+- [x] T069 [P] seed_demo management command (areas, vendors, Swahili/English items, packages) in apps/common/management/commands/seed_demo.py
+- [x] T070 [P] Structured logging (request id, payment/chat events) in config/settings/base.py
+- [x] T071 [P] Dockerfile + web/worker/beat services in docker-compose.yml
+- [x] T072 README.md with setup, env, architecture, and phase notes
+- [x] T073 Run full quickstart.md validation; generate OpenAPI file to docs/openapi.yaml
 
 **🛑 REVIEW & COMMIT — Delivery Phase 5**
 

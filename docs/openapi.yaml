@@ -1,0 +1,3567 @@
+openapi: 3.0.3
+info:
+  title: Event Catering & Drinks Marketplace API
+  version: 1.0.0
+  description: Backend API for booking food and drinks for events (Tanzania).
+paths:
+  /api/v1/admin/commission/:
+    get:
+      operationId: v1_admin_commission_list
+      description: Current commission rate and its history.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommissionPage'
+          description: ''
+    post:
+      operationId: v1_admin_commission_create
+      description: Set the rate for payments that succeed from now on.
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommissionInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CommissionInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CommissionInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Commission'
+          description: ''
+  /api/v1/admin/payouts/:
+    get:
+      operationId: v1_admin_payouts_list
+      description: Payouts to all vendors.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminPayoutList'
+          description: ''
+    post:
+      operationId: v1_admin_payouts_create
+      description: Record a transfer made outside the system. It cannot exceed the
+        vendor's balance.
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayoutInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PayoutInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PayoutInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPayout'
+          description: ''
+  /api/v1/admin/vendors/{id}/approve/:
+    post:
+      operationId: v1_admin_vendors_approve_create
+      description: Approve a pending, rejected or suspended vendor.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorProfile'
+          description: ''
+  /api/v1/admin/vendors/{id}/balance/:
+    get:
+      operationId: v1_admin_vendors_balance_retrieve
+      description: A vendor's totals and balance.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LedgerSummary'
+          description: ''
+  /api/v1/admin/vendors/{id}/reject/:
+    post:
+      operationId: v1_admin_vendors_reject_create
+      description: Reject a pending vendor.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorProfile'
+          description: ''
+  /api/v1/admin/vendors/{id}/suspend/:
+    post:
+      operationId: v1_admin_vendors_suspend_create
+      description: Suspend an approved vendor; its catalog is hidden immediately.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorProfile'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: v1_auth_register_create
+      description: Register a client account and return JWT tokens.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+          description: ''
+  /api/v1/auth/register/vendor/:
+    post:
+      operationId: v1_auth_register_vendor_create
+      description: Register a vendor (pending approval) and return JWT tokens.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorRegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VendorRegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VendorRegisterRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorRegisterResponse'
+          description: ''
+  /api/v1/auth/token/:
+    post:
+      operationId: v1_auth_token_create
+      description: Log in with phone or email + password; returns `{access, refresh}`.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginTokenRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginTokenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginTokenRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+          description: ''
+  /api/v1/auth/token/refresh/:
+    post:
+      operationId: v1_auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/categories/:
+    get:
+      operationId: v1_categories_list
+      parameters:
+      - in: query
+        name: kind
+        schema:
+          type: string
+          enum:
+          - drink
+          - food
+        description: |-
+          * `food` - Food
+          * `drink` - Drink
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+  /api/v1/events/:
+    get:
+      operationId: v1_events_list
+      description: The authenticated client's own events.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEventList'
+          description: ''
+    post:
+      operationId: v1_events_create
+      description: The authenticated client's own events.
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/v1/events/{id}/:
+    get:
+      operationId: v1_events_retrieve
+      description: The authenticated client's own events.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this event.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+    patch:
+      operationId: v1_events_partial_update
+      description: The authenticated client's own events.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this event.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEventRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEventRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEventRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+    delete:
+      operationId: v1_events_destroy
+      description: The authenticated client's own events.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this event.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/items/:
+    get:
+      operationId: v1_items_list
+      description: Available items from approved vendors.
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: is_alcoholic
+        schema:
+          type: boolean
+      - in: query
+        name: kind
+        schema:
+          type: string
+          enum:
+          - drink
+          - food
+        description: |-
+          * `food` - Food
+          * `drink` - Drink
+      - in: query
+        name: max_price
+        schema:
+          type: number
+      - in: query
+        name: min_price
+        schema:
+          type: number
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: service_area
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: vendor
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedItemList'
+          description: ''
+  /api/v1/items/{id}/:
+    get:
+      operationId: v1_items_retrieve
+      description: Available items from approved vendors.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this item.
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+          description: ''
+  /api/v1/me/:
+    get:
+      operationId: v1_me_retrieve
+      description: The authenticated user's own profile.
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: v1_me_partial_update
+      description: The authenticated user's own profile.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/orders/:
+    get:
+      operationId: v1_orders_list
+      description: Clients see their own orders, vendors the orders placed with them,
+        admins all.
+      parameters:
+      - in: query
+        name: event
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - awaiting_cash
+          - cancelled
+          - completed
+          - confirmed
+          - declined
+          - expired
+          - fulfilled
+          - paid
+          - pending
+          - refunded
+        description: |-
+          * `pending` - Pending
+          * `confirmed` - Confirmed
+          * `declined` - Declined
+          * `expired` - Expired
+          * `cancelled` - Cancelled
+          * `awaiting_cash` - Awaiting cash payment
+          * `paid` - Paid
+          * `fulfilled` - Fulfilled
+          * `completed` - Completed
+          * `refunded` - Refunded
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderListList'
+          description: ''
+    post:
+      operationId: v1_orders_create
+      description: Place an order with one vendor for one of your events.
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/{id}/:
+    get:
+      operationId: v1_orders_retrieve
+      description: Clients see their own orders, vendors the orders placed with them,
+        admins all.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this order.
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/{id}/cancel/:
+    post:
+      operationId: v1_orders_cancel_create
+      description: Clients see their own orders, vendors the orders placed with them,
+        admins all.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this order.
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/{id}/complete/:
+    post:
+      operationId: v1_orders_complete_create
+      description: Only after the event date has passed.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this order.
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/{id}/confirm/:
+    post:
+      operationId: v1_orders_confirm_create
+      description: Clients see their own orders, vendors the orders placed with them,
+        admins all.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this order.
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/{id}/confirm-cash/:
+    post:
+      operationId: v1_orders_confirm_cash_create
+      description: The order's vendor or an admin confirms that cash was received.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/{id}/decline/:
+    post:
+      operationId: v1_orders_decline_create
+      description: Clients see their own orders, vendors the orders placed with them,
+        admins all.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this order.
+        required: true
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeclineRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeclineRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeclineRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/{id}/fulfil/:
+    post:
+      operationId: v1_orders_fulfil_create
+      description: Clients see their own orders, vendors the orders placed with them,
+        admins all.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this order.
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/{id}/pay/:
+    post:
+      operationId: v1_orders_pay_create
+      description: Pay a confirmed order online (202, poll the payment) or choose
+        cash (200).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PayRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PayRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayResponse'
+          description: ''
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayResponse'
+          description: ''
+  /api/v1/orders/{id}/refund/:
+    post:
+      operationId: v1_orders_refund_create
+      description: Record a refund made outside the system; reverses the vendor's
+        earning.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/packages/:
+    get:
+      operationId: v1_packages_list
+      description: Available packages from approved vendors.
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: is_alcoholic
+        schema:
+          type: boolean
+      - in: query
+        name: kind
+        schema:
+          type: string
+          enum:
+          - drink
+          - food
+        description: |-
+          * `food` - Food
+          * `drink` - Drink
+      - in: query
+        name: max_price
+        schema:
+          type: number
+      - in: query
+        name: min_price
+        schema:
+          type: number
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: service_area
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: vendor
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPackageList'
+          description: ''
+  /api/v1/packages/{id}/:
+    get:
+      operationId: v1_packages_retrieve
+      description: Available packages from approved vendors.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this package.
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Package'
+          description: ''
+  /api/v1/payments/{id}/:
+    get:
+      operationId: v1_payments_retrieve
+      description: Poll a payment's status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/service-areas/:
+    get:
+      operationId: v1_service_areas_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - vendors
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedServiceAreaList'
+          description: ''
+  /api/v1/vendor/earnings/:
+    get:
+      operationId: v1_vendor_earnings_list
+      description: Your earnings per paid order, and totals over all of them.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - ledger
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EarningPage'
+          description: ''
+  /api/v1/vendor/items/:
+    get:
+      operationId: v1_vendor_items_list
+      description: Own records only. Any vendor may read; only approved vendors may
+        write.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - vendor catalog
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedItemList'
+          description: ''
+    post:
+      operationId: v1_vendor_items_create
+      description: Own records only. Any vendor may read; only approved vendors may
+        write.
+      tags:
+      - vendor catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ItemRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+          description: ''
+  /api/v1/vendor/items/{id}/:
+    get:
+      operationId: v1_vendor_items_retrieve
+      description: Own records only. Any vendor may read; only approved vendors may
+        write.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this item.
+        required: true
+      tags:
+      - vendor catalog
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+          description: ''
+    patch:
+      operationId: v1_vendor_items_partial_update
+      description: Own records only. Any vendor may read; only approved vendors may
+        write.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this item.
+        required: true
+      tags:
+      - vendor catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedItemRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+          description: ''
+    delete:
+      operationId: v1_vendor_items_destroy
+      description: Own records only. Any vendor may read; only approved vendors may
+        write.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this item.
+        required: true
+      tags:
+      - vendor catalog
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vendor/packages/:
+    get:
+      operationId: v1_vendor_packages_list
+      description: Own records only. Any vendor may read; only approved vendors may
+        write.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - vendor catalog
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPackageList'
+          description: ''
+    post:
+      operationId: v1_vendor_packages_create
+      description: Own records only. Any vendor may read; only approved vendors may
+        write.
+      tags:
+      - vendor catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PackageRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PackageRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Package'
+          description: ''
+  /api/v1/vendor/packages/{id}/:
+    get:
+      operationId: v1_vendor_packages_retrieve
+      description: Own records only. Any vendor may read; only approved vendors may
+        write.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this package.
+        required: true
+      tags:
+      - vendor catalog
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Package'
+          description: ''
+    patch:
+      operationId: v1_vendor_packages_partial_update
+      description: Own records only. Any vendor may read; only approved vendors may
+        write.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this package.
+        required: true
+      tags:
+      - vendor catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPackageRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPackageRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPackageRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Package'
+          description: ''
+    delete:
+      operationId: v1_vendor_packages_destroy
+      description: Own records only. Any vendor may read; only approved vendors may
+        write.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this package.
+        required: true
+      tags:
+      - vendor catalog
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vendor/payouts/:
+    get:
+      operationId: v1_vendor_payouts_list
+      description: Payouts made to you.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - ledger
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVendorPayoutList'
+          description: ''
+  /api/v1/vendor/profile/:
+    get:
+      operationId: v1_vendor_profile_retrieve
+      description: The authenticated vendor's own profile, including payout details.
+      tags:
+      - vendors
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorProfile'
+          description: ''
+    patch:
+      operationId: v1_vendor_profile_partial_update
+      description: The authenticated vendor's own profile, including payout details.
+      tags:
+      - vendors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVendorProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVendorProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVendorProfileRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorProfile'
+          description: ''
+  /api/v1/vendors/:
+    get:
+      operationId: v1_vendors_list
+      description: Approved vendors.
+      parameters:
+      - in: query
+        name: offers_drinks
+        schema:
+          type: boolean
+      - in: query
+        name: offers_food
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: service_area
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - vendors
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPublicVendorList'
+          description: ''
+  /api/v1/vendors/{id}/:
+    get:
+      operationId: v1_vendors_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - vendors
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicVendor'
+          description: ''
+  /api/v1/webhooks/azampay/{token}/:
+    post:
+      operationId: v1_webhooks_azampay_create
+      description: |-
+        Payment results from AzamPay, authenticated by the secret token in the path.
+
+        Anything understood or unusable gets 200, so the gateway does not keep retrying it.
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - webhooks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/webhooks/whatsapp/:
+    get:
+      operationId: v1_webhooks_whatsapp_retrieve
+      description: |-
+        Messages from Meta, authenticated by their HMAC signature.
+
+        Anything signed gets 200, even if unusable, so Meta does not keep retrying it.
+      parameters:
+      - in: query
+        name: hub.challenge
+        schema:
+          type: string
+      - in: query
+        name: hub.mode
+        schema:
+          type: string
+      - in: query
+        name: hub.verify_token
+        schema:
+          type: string
+      tags:
+      - webhooks
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+          description: ''
+    post:
+      operationId: v1_webhooks_whatsapp_create
+      description: |-
+        Messages from Meta, authenticated by their HMAC signature.
+
+        Anything signed gets 200, even if unusable, so Meta does not keep retrying it.
+      tags:
+      - webhooks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+components:
+  schemas:
+    AdminPayout:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        vendor:
+          $ref: '#/components/schemas/VendorSummary'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        method:
+          allOf:
+          - $ref: '#/components/schemas/PayoutMethodEnum'
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+          description: External transfer id
+        paid_at:
+          type: string
+          format: date-time
+          readOnly: true
+        recorded_by_name:
+          type: string
+        note:
+          type: string
+          readOnly: true
+      required:
+      - amount
+      - id
+      - method
+      - note
+      - paid_at
+      - recorded_by_name
+      - reference
+      - vendor
+    BankNameEnum:
+      enum:
+      - CRDB
+      - NMB
+      type: string
+      description: |-
+        * `CRDB` - CRDB
+        * `NMB` - NMB
+    BlankEnum:
+      enum:
+      - ''
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        name_en:
+          type: string
+          maxLength: 100
+        name_sw:
+          type: string
+          maxLength: 100
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+      required:
+      - id
+      - kind
+      - name_en
+      - name_sw
+      - slug
+    ChannelEnum:
+      enum:
+      - api
+      - whatsapp
+      type: string
+      description: |-
+        * `api` - API
+        * `whatsapp` - WhatsApp
+    Commission:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,4})?$
+          readOnly: true
+          description: 0.1000 = 10%
+        effective_from:
+          type: string
+          format: date-time
+          readOnly: true
+        set_by_name:
+          type: string
+          nullable: true
+          description: null = system
+      required:
+      - effective_from
+      - id
+      - rate
+    CommissionInputRequest:
+      type: object
+      properties:
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,4})?$
+          description: 0.1000 = 10%
+      required:
+      - rate
+    CommissionPage:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        current_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,4})?$
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Commission'
+      required:
+      - count
+      - current_rate
+      - next
+      - previous
+      - results
+    DeclineRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+      - reason
+    Earning:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        order:
+          type: string
+          format: uuid
+          readOnly: true
+        order_reference:
+          type: string
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/PaymentMethodEnum'
+          readOnly: true
+        gross:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        commission_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,4})?$
+          readOnly: true
+        commission_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        net:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        reversed:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - channel
+      - commission_amount
+      - commission_rate
+      - created_at
+      - gross
+      - id
+      - net
+      - order
+      - order_reference
+      - reversed
+    EarningPage:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        summary:
+          $ref: '#/components/schemas/LedgerSummary'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Earning'
+      required:
+      - count
+      - next
+      - previous
+      - results
+      - summary
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        event_type:
+          $ref: '#/components/schemas/EventTypeEnum'
+        title:
+          type: string
+          maxLength: 150
+        starts_at:
+          type: string
+          format: date-time
+        venue:
+          type: string
+          maxLength: 255
+        service_area:
+          type: string
+          format: uuid
+          nullable: true
+        guest_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - event_type
+      - guest_count
+      - id
+      - starts_at
+      - title
+      - venue
+    EventRequest:
+      type: object
+      properties:
+        event_type:
+          $ref: '#/components/schemas/EventTypeEnum'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 150
+        starts_at:
+          type: string
+          format: date-time
+        venue:
+          type: string
+          minLength: 1
+          maxLength: 255
+        service_area:
+          type: string
+          format: uuid
+          nullable: true
+        guest_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        notes:
+          type: string
+      required:
+      - event_type
+      - guest_count
+      - starts_at
+      - title
+      - venue
+    EventTypeEnum:
+      enum:
+      - wedding
+      - birthday
+      - corporate
+      - funeral
+      - graduation
+      - religious
+      - other
+      type: string
+      description: |-
+        * `wedding` - Wedding
+        * `birthday` - Birthday
+        * `corporate` - Corporate
+        * `funeral` - Funeral
+        * `graduation` - Graduation
+        * `religious` - Religious
+        * `other` - Other
+    Item:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        vendor:
+          allOf:
+          - $ref: '#/components/schemas/VendorSummary'
+          readOnly: true
+        category:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        is_alcoholic:
+          type: boolean
+          description: Required for drinks; must be false for food.
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        min_quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        is_available:
+          type: boolean
+        image:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - category
+      - created_at
+      - id
+      - kind
+      - name
+      - unit
+      - unit_price
+      - vendor
+    ItemRequest:
+      type: object
+      properties:
+        category:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        description:
+          type: string
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        is_alcoholic:
+          type: boolean
+          description: Required for drinks; must be false for food.
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        min_quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        is_available:
+          type: boolean
+        image:
+          type: string
+          format: binary
+      required:
+      - category
+      - kind
+      - name
+      - unit
+      - unit_price
+    KindEnum:
+      enum:
+      - food
+      - drink
+      type: string
+      description: |-
+        * `food` - Food
+        * `drink` - Drink
+    LedgerSummary:
+      type: object
+      description: Reversed earnings are left out. `balance` = net_online - commission_owed_cash
+        - payouts.
+      properties:
+        gross:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+        commission:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+        net_online:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+        commission_owed_cash:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+        payouts:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+      required:
+      - balance
+      - commission
+      - commission_owed_cash
+      - gross
+      - net_online
+      - payouts
+    LoginTokenRequest:
+      type: object
+      description: Obtain JWT pair with `login` = phone (any accepted format) or email.
+      properties:
+        login:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - login
+      - password
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatusEnum'
+          readOnly: true
+        event:
+          $ref: '#/components/schemas/OrderEvent'
+        client:
+          $ref: '#/components/schemas/OrderClient'
+        vendor:
+          $ref: '#/components/schemas/VendorSummary'
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        contains_alcohol:
+          type: boolean
+          readOnly: true
+        age_confirmed:
+          type: boolean
+          readOnly: true
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/ChannelEnum'
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLine'
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+        status_history:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderStatusChange'
+      required:
+      - age_confirmed
+      - channel
+      - client
+      - contains_alcohol
+      - created_at
+      - event
+      - expires_at
+      - id
+      - lines
+      - notes
+      - payments
+      - reference
+      - status
+      - status_history
+      - subtotal
+      - total
+      - vendor
+    OrderClient:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          description: E.164
+          maxLength: 16
+      required:
+      - full_name
+      - id
+      - phone
+    OrderCreateRequest:
+      type: object
+      description: Prices and totals are never accepted from the client.
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        vendor_id:
+          type: string
+          format: uuid
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLineInputRequest'
+        age_confirmed:
+          type: boolean
+          default: false
+        notes:
+          type: string
+          default: ''
+          maxLength: 2000
+      required:
+      - event_id
+      - lines
+      - vendor_id
+    OrderEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 150
+        event_type:
+          $ref: '#/components/schemas/EventTypeEnum'
+        starts_at:
+          type: string
+          format: date-time
+        venue:
+          type: string
+          maxLength: 255
+        guest_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+      required:
+      - event_type
+      - guest_count
+      - id
+      - starts_at
+      - title
+      - venue
+    OrderLine:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        item:
+          type: string
+          format: uuid
+          nullable: true
+        package:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        unit:
+          type: string
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        line_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - id
+      - line_total
+      - name
+      - quantity
+      - unit
+      - unit_price
+    OrderLineInputRequest:
+      type: object
+      properties:
+        item_id:
+          type: string
+          format: uuid
+        package_id:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          maximum: 1000000
+          minimum: 1
+      required:
+      - quantity
+    OrderList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatusEnum'
+          readOnly: true
+        event:
+          $ref: '#/components/schemas/OrderEvent'
+        client:
+          $ref: '#/components/schemas/OrderClient'
+        vendor:
+          $ref: '#/components/schemas/VendorSummary'
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        contains_alcohol:
+          type: boolean
+          readOnly: true
+        age_confirmed:
+          type: boolean
+          readOnly: true
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/ChannelEnum'
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - age_confirmed
+      - channel
+      - client
+      - contains_alcohol
+      - created_at
+      - event
+      - expires_at
+      - id
+      - notes
+      - reference
+      - status
+      - subtotal
+      - total
+      - vendor
+    OrderStatusChange:
+      type: object
+      properties:
+        from_status:
+          oneOf:
+          - $ref: '#/components/schemas/OrderStatusEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        to_status:
+          $ref: '#/components/schemas/OrderStatusEnum'
+        actor_name:
+          type: string
+          nullable: true
+          description: null = system
+        note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - to_status
+    OrderStatusEnum:
+      enum:
+      - pending
+      - confirmed
+      - declined
+      - expired
+      - cancelled
+      - awaiting_cash
+      - paid
+      - fulfilled
+      - completed
+      - refunded
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `confirmed` - Confirmed
+        * `declined` - Declined
+        * `expired` - Expired
+        * `cancelled` - Cancelled
+        * `awaiting_cash` - Awaiting cash payment
+        * `paid` - Paid
+        * `fulfilled` - Fulfilled
+        * `completed` - Completed
+        * `refunded` - Refunded
+    Package:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        vendor:
+          allOf:
+          - $ref: '#/components/schemas/VendorSummary'
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        pricing:
+          $ref: '#/components/schemas/PricingEnum'
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        min_guests:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        is_available:
+          type: boolean
+        contains_alcohol:
+          type: boolean
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackageItem'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - contains_alcohol
+      - created_at
+      - id
+      - items
+      - name
+      - price
+      - pricing
+      - vendor
+    PackageItem:
+      type: object
+      properties:
+        item:
+          allOf:
+          - $ref: '#/components/schemas/PackageItemDetail'
+          readOnly: true
+        quantity_note:
+          type: string
+          maxLength: 100
+      required:
+      - item
+    PackageItemDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        is_alcoholic:
+          type: boolean
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+      required:
+      - id
+      - kind
+      - name
+      - unit
+    PackageItemDetailRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        is_alcoholic:
+          type: boolean
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+      required:
+      - kind
+      - name
+      - unit
+    PackageItemRequest:
+      type: object
+      properties:
+        item_id:
+          type: string
+          format: uuid
+          writeOnly: true
+        quantity_note:
+          type: string
+          maxLength: 100
+      required:
+      - item_id
+    PackageRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        description:
+          type: string
+        pricing:
+          $ref: '#/components/schemas/PricingEnum'
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        min_guests:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        is_available:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackageItemRequest'
+      required:
+      - items
+      - name
+      - price
+      - pricing
+    PaginatedAdminPayoutList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminPayout'
+    PaginatedCategoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedEventList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+    PaginatedItemList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+    PaginatedOrderListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderList'
+    PaginatedPackageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Package'
+    PaginatedPublicVendorList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicVendor'
+    PaginatedServiceAreaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceArea'
+    PaginatedVendorPayoutList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorPayout'
+    PatchedEventRequest:
+      type: object
+      properties:
+        event_type:
+          $ref: '#/components/schemas/EventTypeEnum'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 150
+        starts_at:
+          type: string
+          format: date-time
+        venue:
+          type: string
+          minLength: 1
+          maxLength: 255
+        service_area:
+          type: string
+          format: uuid
+          nullable: true
+        guest_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        notes:
+          type: string
+    PatchedItemRequest:
+      type: object
+      properties:
+        category:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        description:
+          type: string
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        is_alcoholic:
+          type: boolean
+          description: Required for drinks; must be false for food.
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        min_quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        is_available:
+          type: boolean
+        image:
+          type: string
+          format: binary
+    PatchedPackageRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        description:
+          type: string
+        pricing:
+          $ref: '#/components/schemas/PricingEnum'
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        min_guests:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        is_available:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackageItemRequest'
+    PatchedUserRequest:
+      type: object
+      description: Own profile. Phone, role and channel are read-only.
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          nullable: true
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        preferred_language:
+          $ref: '#/components/schemas/PreferredLanguageEnum'
+    PatchedVendorProfileRequest:
+      type: object
+      description: The vendor's own profile (also returned to admins).
+      properties:
+        business_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        description:
+          type: string
+        contact_phone:
+          type: string
+          minLength: 1
+          maxLength: 32
+        offers_food:
+          type: boolean
+        offers_drinks:
+          type: boolean
+        min_notice_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        service_area_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          writeOnly: true
+        payout_method:
+          oneOf:
+          - $ref: '#/components/schemas/PayoutMethodEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        payout_account_name:
+          type: string
+          maxLength: 150
+        payout_account_number:
+          type: string
+          maxLength: 50
+        payout_provider:
+          type: string
+          maxLength: 50
+    PayProviderEnum:
+      enum:
+      - mpesa
+      - tigo
+      - airtel
+      - halopesa
+      - azampesa
+      - bank
+      type: string
+      description: |-
+        * `mpesa` - M-Pesa
+        * `tigo` - Tigo Pesa / Mixx
+        * `airtel` - Airtel Money
+        * `halopesa` - HaloPesa
+        * `azampesa` - AzamPesa
+        * `bank` - Bank
+    PayRequest:
+      type: object
+      description: '`provider` and `phone` are required online; the bank fields when
+        provider is `bank`.'
+      properties:
+        method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        provider:
+          $ref: '#/components/schemas/PayProviderEnum'
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 32
+        bank_name:
+          $ref: '#/components/schemas/BankNameEnum'
+        account_number:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 50
+        otp:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 20
+      required:
+      - method
+    PayResponse:
+      type: object
+      properties:
+        payment_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/PaymentStatusEnum'
+        order_status:
+          $ref: '#/components/schemas/OrderStatusEnum'
+      required:
+      - order_status
+      - payment_id
+      - status
+    Payment:
+      type: object
+      description: Never add the payer's phone, the raw callback or review fields
+        here.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        order:
+          type: string
+          format: uuid
+          readOnly: true
+        method:
+          allOf:
+          - $ref: '#/components/schemas/PaymentMethodEnum'
+          readOnly: true
+        provider:
+          allOf:
+          - $ref: '#/components/schemas/PaymentProviderEnum'
+          readOnly: true
+        bank_name:
+          allOf:
+          - $ref: '#/components/schemas/BankNameEnum'
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentStatusEnum'
+          readOnly: true
+          default: pending
+        gateway_reference:
+          type: string
+          readOnly: true
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - bank_name
+      - completed_at
+      - created_at
+      - gateway_reference
+      - id
+      - method
+      - order
+      - provider
+      - status
+    PaymentMethodEnum:
+      enum:
+      - online
+      - cash
+      type: string
+      description: |-
+        * `online` - Online
+        * `cash` - Cash
+    PaymentProviderEnum:
+      enum:
+      - mpesa
+      - tigo
+      - airtel
+      - halopesa
+      - azampesa
+      - bank
+      - cash
+      type: string
+      description: |-
+        * `mpesa` - M-Pesa
+        * `tigo` - Tigo Pesa / Mixx
+        * `airtel` - Airtel Money
+        * `halopesa` - HaloPesa
+        * `azampesa` - AzamPesa
+        * `bank` - Bank
+        * `cash` - Cash
+    PaymentStatusEnum:
+      enum:
+      - pending
+      - success
+      - failed
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `success` - Success
+        * `failed` - Failed
+        * `cancelled` - Cancelled
+    PayoutInputRequest:
+      type: object
+      properties:
+        vendor_id:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        method:
+          $ref: '#/components/schemas/PayoutMethodEnum'
+        reference:
+          type: string
+          minLength: 1
+          maxLength: 100
+        note:
+          type: string
+          default: ''
+          maxLength: 2000
+      required:
+      - amount
+      - method
+      - reference
+      - vendor_id
+    PayoutMethodEnum:
+      enum:
+      - mobile_money
+      - bank
+      type: string
+      description: |-
+        * `mobile_money` - Mobile money
+        * `bank` - Bank
+    PreferredLanguageEnum:
+      enum:
+      - en
+      - sw
+      type: string
+      description: |-
+        * `en` - English
+        * `sw` - Kiswahili
+    PricingEnum:
+      enum:
+      - per_guest
+      - flat
+      type: string
+      description: |-
+        * `per_guest` - Per guest
+        * `flat` - Flat
+    PublicVendor:
+      type: object
+      description: What anyone may see. Never add payout or approval fields here.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        business_name:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        contact_phone:
+          type: string
+          description: E.164
+          maxLength: 16
+        offers_food:
+          type: boolean
+        offers_drinks:
+          type: boolean
+        min_notice_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        service_areas:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceArea'
+          readOnly: true
+      required:
+      - business_name
+      - contact_phone
+      - id
+      - service_areas
+    RefundRequest:
+      type: object
+      properties:
+        note:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+      - note
+    RegisterRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 32
+        email:
+          nullable: true
+          oneOf:
+          - type: string
+            format: email
+          - type: string
+            maxLength: 0
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        preferred_language:
+          allOf:
+          - $ref: '#/components/schemas/PreferredLanguageEnum'
+          default: en
+      required:
+      - full_name
+      - password
+      - phone
+    RegisterResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+      - user
+    RoleEnum:
+      enum:
+      - client
+      - vendor
+      - admin
+      type: string
+      description: |-
+        * `client` - Client
+        * `vendor` - Vendor
+        * `admin` - Admin
+    ServiceArea:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+      required:
+      - id
+      - name
+    ServiceAreaRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+      - name
+    TokenPair:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    UnitEnum:
+      enum:
+      - plate
+      - person
+      - piece
+      - bottle
+      - crate
+      - litre
+      - kg
+      - tray
+      type: string
+      description: |-
+        * `plate` - Plate
+        * `person` - Person
+        * `piece` - Piece
+        * `bottle` - Bottle
+        * `crate` - Crate
+        * `litre` - Litre
+        * `kg` - Kg
+        * `tray` - Tray
+    User:
+      type: object
+      description: Own profile. Phone, role and channel are read-only.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          readOnly: true
+          description: E.164
+        email:
+          nullable: true
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        preferred_language:
+          $ref: '#/components/schemas/PreferredLanguageEnum'
+        created_via:
+          allOf:
+          - $ref: '#/components/schemas/ChannelEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - created_via
+      - full_name
+      - id
+      - phone
+      - role
+    VendorPayout:
+      type: object
+      description: What the vendor sees. Never add the admin's note or name here.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        method:
+          allOf:
+          - $ref: '#/components/schemas/PayoutMethodEnum'
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+          description: External transfer id
+        paid_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - id
+      - method
+      - paid_at
+      - reference
+    VendorProfile:
+      type: object
+      description: The vendor's own profile (also returned to admins).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        business_name:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        contact_phone:
+          type: string
+          maxLength: 32
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VendorStatusEnum'
+          readOnly: true
+        approved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        offers_food:
+          type: boolean
+        offers_drinks:
+          type: boolean
+        min_notice_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        service_areas:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceArea'
+          readOnly: true
+        payout_method:
+          oneOf:
+          - $ref: '#/components/schemas/PayoutMethodEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        payout_account_name:
+          type: string
+          maxLength: 150
+        payout_account_number:
+          type: string
+          maxLength: 50
+        payout_provider:
+          type: string
+          maxLength: 50
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - approved_at
+      - business_name
+      - contact_phone
+      - created_at
+      - id
+      - service_areas
+      - status
+    VendorRegisterRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 32
+        email:
+          nullable: true
+          oneOf:
+          - type: string
+            format: email
+          - type: string
+            maxLength: 0
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        preferred_language:
+          allOf:
+          - $ref: '#/components/schemas/PreferredLanguageEnum'
+          default: en
+        business_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        description:
+          type: string
+          default: ''
+        contact_phone:
+          type: string
+          minLength: 1
+          maxLength: 32
+        offers_food:
+          type: boolean
+          default: false
+        offers_drinks:
+          type: boolean
+          default: false
+        min_notice_days:
+          type: integer
+          maximum: 365
+          minimum: 0
+          default: 2
+        service_area_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          writeOnly: true
+      required:
+      - business_name
+      - full_name
+      - password
+      - phone
+      - service_area_ids
+    VendorRegisterResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        vendor:
+          $ref: '#/components/schemas/VendorProfile'
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+      - user
+      - vendor
+    VendorStatusEnum:
+      enum:
+      - pending
+      - approved
+      - suspended
+      - rejected
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `approved` - Approved
+        * `suspended` - Suspended
+        * `rejected` - Rejected
+    VendorSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        business_name:
+          type: string
+          maxLength: 150
+      required:
+      - business_name
+      - id
+    VendorSummaryRequest:
+      type: object
+      properties:
+        business_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+      required:
+      - business_name
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

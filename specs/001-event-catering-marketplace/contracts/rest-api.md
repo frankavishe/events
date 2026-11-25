@@ -65,8 +65,9 @@ implemented.
 | GET | `/vendor/earnings/` | vendor | list + `summary {gross, commission, net_online, commission_owed_cash, payouts, balance}` |
 | GET | `/vendor/payouts/` | vendor |
 | GET/POST | `/admin/commission/` | admin | current rate + history; POST `{rate}` |
-| GET/POST | `/admin/payouts/` | admin | POST `{vendor_id, amount, method, reference, note}` |
+| GET/POST | `/admin/payouts/` | admin | POST `{vendor_id, amount, method, reference, note}`; over balance → 400; same vendor, method and reference again → 409 `duplicate_payout` |
 | GET | `/admin/vendors/{id}/balance/` | admin |
 
 Status codes: 201 create, 202 async payment start, 400 validation, 401 unauthenticated,
-403 wrong role, 404 not in scope, 409 invalid state transition, 502 gateway error.
+403 wrong role, 404 not in scope, 409 invalid state transition, 429 too many requests (`throttled`,
+with `Retry-After`), 502 gateway error. Valid webhooks are never limited. Every response has `X-Request-ID`.

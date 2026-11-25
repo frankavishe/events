@@ -1,5 +1,7 @@
 import django_filters as filters
 from django.db.models import Exists, OuterRef
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 
 from apps.vendors.models import ServiceArea, VendorProfile
 
@@ -41,7 +43,7 @@ class PackageFilter(_CatalogFilter):
 
     kind = filters.ChoiceFilter(choices=Kind.choices, method="filter_item")
     category = filters.ModelChoiceFilter(
-        queryset=Category.objects.all(), to_field_name="slug", method="filter_item"
+        queryset=Category.objects.all(), to_field_name="slug", method="filter_category"
     )
     is_alcoholic = filters.BooleanFilter(field_name="contains_alcohol")
     min_price = filters.NumberFilter(field_name="price", lookup_expr="gte")
@@ -54,3 +56,7 @@ class PackageFilter(_CatalogFilter):
     def filter_item(self, queryset, name, value):
         matching = PackageItem.objects.filter(package=OuterRef("pk"), **{f"item__{name}": value})
         return queryset.filter(Exists(matching))
+
+    @extend_schema_field(OpenApiTypes.STR)  # the slug
+    def filter_category(self, queryset, name, value):
+        return self.filter_item(queryset, name, value)

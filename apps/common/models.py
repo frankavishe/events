@@ -13,3 +13,11 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
         ordering = ("-created_at",)
+
+
+def ascending_ids(count: int) -> list[uuid.UUID]:
+    """Ids for rows saved in sequence whose order matters.
+
+    Such rows sort by (created_at, id), and the clock may not advance between two saves.
+    """
+    return sorted(uuid.uuid4() for _ in range(count))

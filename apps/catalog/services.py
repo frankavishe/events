@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 from rest_framework.exceptions import ValidationError
 
 from apps.common.exceptions import Conflict
+from apps.common.models import ascending_ids
 from apps.vendors.services import public_vendors
 
 from .models import Item, Package, PackageItem
@@ -90,8 +91,10 @@ def save_package(package: Package, *, items: list[dict] | None = None, **changes
     package.save()
     if items is not None:
         package.package_items.all().delete()
-        for entry in items:  # one by one, so created_at keeps the given order
+        # One by one with ascending ids, so (created_at, id) keeps the given order.
+        for entry, pk in zip(items, ascending_ids(len(items)), strict=True):
             PackageItem.objects.create(
+                pk=pk,
                 package=package,
                 item=entry["item"],
                 quantity_note=entry.get("quantity_note", ""),

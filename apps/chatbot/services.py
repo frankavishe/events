@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from apps.accounts.models import User
+from apps.common.logs import log_event
 from apps.notifications.clients import MessagingError, Recipient, get_messaging_client
 
 from . import agent, prompts
@@ -195,6 +196,7 @@ def _answer(conversation, message) -> bool:
     # A fallback was sent if there is no model content: keep the message marked as failed.
     failed = message.message_type == "text" and reply.payload is None
     _set_status(message, Status.FAILED if failed else Status.PROCESSED)
+    log_event(logger, "chat.failed" if failed else "chat.processed", message=message.pk)
     return True
 
 

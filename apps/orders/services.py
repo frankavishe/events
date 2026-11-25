@@ -13,6 +13,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from apps.catalog.models import Package
 from apps.catalog.services import public_items, public_packages
 from apps.common.exceptions import Conflict
+from apps.common.models import ascending_ids
 from apps.common.money import MONEY_DECIMAL_PLACES, MONEY_MAX_DIGITS, to_money
 from apps.common.permissions import is_admin
 from apps.events.models import Event
@@ -249,9 +250,10 @@ def create_order(
             expires_at=timezone.now() + EXPIRY,
         )
     )
-    for line in quote.lines:  # one by one, so created_at keeps the given order
+    # One by one with ascending ids, so (created_at, id) keeps the given order.
+    for line, line.pk in zip(quote.lines, ascending_ids(len(quote.lines)), strict=True):
         line.order = order
-        line.save()
+        line.save(force_insert=True)
     _log(order, "", client)
     notify.new_order(order)
     return order

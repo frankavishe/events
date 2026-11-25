@@ -24,6 +24,8 @@ for _name in (
     if not getattr(base, _name):
         raise ImproperlyConfigured(f"{_name} is required in production.")
 
+LOGGING["handlers"]["console"]["formatter"] = "json"  # noqa: F405
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=True)
 SESSION_COOKIE_SECURE = True
@@ -35,4 +37,6 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 REST_FRAMEWORK = {
     **REST_FRAMEWORK,  # noqa: F405
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    # Required: behind a proxy, 0 would make all clients share one limit.
+    "NUM_PROXIES": env.int("DJANGO_NUM_PROXIES"),
 }

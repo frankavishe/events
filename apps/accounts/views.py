@@ -4,6 +4,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.throttling import LoginAddressThrottle, LoginThrottle, RegisterThrottle
+
 from . import services
 from .serializers import (
     LoginTokenSerializer,
@@ -19,6 +21,7 @@ class RegisterView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [RegisterThrottle]
 
     @extend_schema(
         request=RegisterSerializer,
@@ -38,6 +41,7 @@ class TokenObtainView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [LoginAddressThrottle, LoginThrottle]
 
     def get_authenticate_header(self, request):
         # Without authenticators DRF would turn a failed login into 403 instead of 401.

@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from apps.accounts.serializers import UserSerializer
 from apps.accounts.services import tokens_for
 from apps.common.permissions import IsAdmin, IsVendor
+from apps.common.throttling import RegisterThrottle
 
 from . import services
 from .filters import VendorFilter
@@ -27,6 +28,7 @@ class VendorRegisterView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [RegisterThrottle]
 
     @extend_schema(
         request=VendorRegisterSerializer,

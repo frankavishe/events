@@ -11,6 +11,7 @@ api_v1 = [
     path("", include("apps.events.urls")),
     path("", include("apps.orders.urls")),
     path("", include("apps.payments.urls")),
+    path("", include("apps.ledger.urls")),
     path("", include("apps.chatbot.urls")),
 ]
 

@@ -14,6 +14,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.throttling import count_rejected_webhook
+
 from . import services, tasks
 
 logger = logging.getLogger(__name__)
@@ -27,6 +29,7 @@ class WhatsAppWebhookView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = []  # only rejected requests are limited
 
     @extend_schema(
         parameters=[
@@ -45,6 +48,7 @@ class WhatsAppWebhookView(APIView):
             or query.get("hub.mode") != "subscribe"
             or not constant_time_compare(given, expected)
         ):
+            count_rejected_webhook(request)
             raise PermissionDenied
         return HttpResponse(query.get("hub.challenge", ""), content_type="text/plain")
 
@@ -54,6 +58,7 @@ class WhatsAppWebhookView(APIView):
     def post(self, request):
         body = request.body
         if not _signed(body, request.headers.get("X-Hub-Signature-256", "")):
+            count_rejected_webhook(request)
             raise PermissionDenied
         try:
             data = json.loads(body)

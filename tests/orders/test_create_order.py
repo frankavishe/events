@@ -192,6 +192,13 @@ def test_total_overflow(place, vendor):
     assert_rejected(place, "lines", line(item, 10**12))
 
 
+def test_lines_keep_the_given_order_when_the_clock_stands_still(place, vendor):
+    items = ItemFactory.create_batch(6, vendor=vendor)
+    with freeze_time(timezone.now()):
+        order = place(*[line(item) for item in items])
+    assert [kept.item for kept in order.lines.all()] == items
+
+
 def test_reference_collision_is_retried(place, vendor, monkeypatch):
     item = ItemFactory(vendor=vendor)
     taken = place(line(item)).reference
