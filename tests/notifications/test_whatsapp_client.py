@@ -135,6 +135,29 @@ def test_errors(outcome, transient, caplog):
 
 
 @respx.mock
+@pytest.mark.parametrize(
+    ("content", "logged"),
+    [
+        (
+            {"error": {"code": 190, "error_subcode": 463, "message": "private"}},
+            "code 190, subcode 463",
+        ),
+        ({"error": {"code": 131047}}, "code 131047, subcode None"),
+        ({"error": {"code": "private"}}, "code None, subcode None"),
+        ({"error": "private"}, "code None, subcode None"),
+        ({}, "code None, subcode None"),
+        (["private"], "code None, subcode None"),
+    ],
+)
+def test_error_codes_are_logged_without_texts(content, logged, caplog):
+    respx.post(URL).mock(return_value=httpx.Response(400, json=content))
+    with pytest.raises(MessagingError):
+        get_messaging_client().send_text(PHONE, "x")
+    assert logged in caplog.text
+    assert "private" not in caplog.text
+
+
+@respx.mock
 def test_accepted_without_readable_body_is_not_resent():
     respx.post(URL).mock(return_value=httpx.Response(200, text="?"))
     assert get_messaging_client().send_text(PHONE, "x") is None

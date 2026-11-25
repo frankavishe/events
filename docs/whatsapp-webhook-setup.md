@@ -136,7 +136,9 @@ test number: changing the callback URL of the live app stops production messages
 | Log: `other phone number` | Dashboard sample, or a wrong `WHATSAPP_PHONE_NUMBER_ID` |
 | Log: `not about messages` | Another field is subscribed. Harmless |
 | Message stays `received` | The Celery worker is not running, or cannot reach Redis |
-| Log: `WhatsApp send returned HTTP 401` | The access token expired or was revoked |
+| Log: `WhatsApp send returned HTTP 401`, or code 190 | The access token expired (subcode 463) or was revoked |
+| Nothing sent or received on the real number | `WHATSAPP_PHONE_NUMBER_ID` is Meta's test number, or the WABA that owns the real number is not subscribed (step 6) |
+| Log: `Notification skipped` | Outside the 24 h window and the `WHATSAPP_TEMPLATE_*` variable is empty |
 | Other `WhatsApp send returned HTTP 4xx` | Missing permission or asset access, wrong phone number ID, or outside the 24 h window |
 | User can browse but not book | Their phone is hidden, so Meta sends only a business-scoped ID |
 

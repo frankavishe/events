@@ -109,7 +109,13 @@ class WhatsAppCloudClient:
             logger.warning("WhatsApp send failed: %s", type(exc).__name__)
             raise MessagingError(transient=True) from None
         if not response.is_success:
-            logger.warning("WhatsApp send returned HTTP %s", response.status_code)
+            code, subcode = _error_codes(response)
+            logger.warning(
+                "WhatsApp send returned HTTP %s (code %s, subcode %s)",
+                response.status_code,
+                code,
+                subcode,
+            )
             raise MessagingError(
                 transient=response.status_code == 429 or response.status_code >= 500
             )
@@ -118,6 +124,16 @@ class WhatsAppCloudClient:
         except (ValueError, KeyError, IndexError, TypeError):
             logger.warning("WhatsApp accepted a message without returning its id")
             return None
+
+
+def _error_codes(response) -> tuple[int | None, int | None]:
+    """Meta's numeric error codes. Its texts may contain private data, so they are not used."""
+    try:
+        error = response.json()["error"]
+        codes = error.get("code"), error.get("error_subcode")
+    except (ValueError, KeyError, TypeError, AttributeError):
+        return None, None
+    return tuple(c if isinstance(c, int) else None for c in codes)
 
 
 class FakeMessagingClient:
