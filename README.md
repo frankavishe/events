@@ -72,6 +72,7 @@ Tests need the `db` container, and no network or credentials.
 - Set `DJANGO_NUM_PROXIES` to the number of proxies in front of the app. Too low and clients share
   one request limit; too high and they can forge their address. Let only the proxy reach the app:
   it must set `X-Forwarded-Proto` and `X-Forwarded-For` itself.
+- Connecting WhatsApp: `docs/whatsapp-webhook-setup.md`.
 - Password codes need `WHATSAPP_TEMPLATE_AUTH_CODE`: a Meta authentication template with a
   copy-code button, approved in `en` and `sw`. Without it the app does not start.
 - Changing a password ends all of that user's sessions. Tokens issued before this feature was

@@ -238,6 +238,8 @@ AZAMPAY_CHECKOUT_BASE_URL = env(
     "AZAMPAY_CHECKOUT_BASE_URL", default="https://sandbox.azampay.co.tz"
 )
 AZAMPAY_CALLBACK_TOKEN = env("AZAMPAY_CALLBACK_TOKEN", default="")
+# WhatsApp webhooks can be up to 3 MB; Django's default limit is 2.5 MB.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 3 * 1024 * 1024
 MESSAGING_PROVIDER = env("MESSAGING_PROVIDER", default="fake")
 WHATSAPP_ACCESS_TOKEN = env("WHATSAPP_ACCESS_TOKEN", default="")
 WHATSAPP_PHONE_NUMBER_ID = env("WHATSAPP_PHONE_NUMBER_ID", default="")

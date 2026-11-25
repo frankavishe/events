@@ -9,6 +9,8 @@
 - The phone may be hidden: `from`/`wa_id` are then omitted and `from_user_id` (BSUID) identifies the sender.
   Such users can browse but not book. Replies go to `recipient` instead of `to`.
 - Header `X-Hub-Signature-256: sha256=<hex HMAC-SHA256(raw_body, WHATSAPP_APP_SECRET)>`; mismatch → 403.
+- Only changes with `field: "messages"` are handled; others get 200 and are ignored. Bodies up to 3 MB.
+- Meta retries for up to 7 days, so the 24 h window follows the message's `timestamp`, not its arrival.
 - Body: `entry[].changes[].value.messages[]` with `from`, `id` (wamid), `type`, `text.body`;
   `value.contacts[].profile.name`; `value.statuses[]` (delivery receipts, stored and ignored).
 - Behaviour: for each message, insert `ChatMessage` (unique `wa_message_id`; duplicates skipped),

@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+import time
 from pathlib import Path
 
 import pytest
@@ -40,6 +41,7 @@ def payload():
         value = data["entry"][0]["changes"][0]["value"]
         target = value["messages"][0]
         target["id"] = wamid
+        target["timestamp"] = str(int(time.time()))
         if text is not None:
             target["text"]["body"] = text
         for key, new in message.items():

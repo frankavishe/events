@@ -1,4 +1,5 @@
-from datetime import timedelta
+import logging
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 import pytest
@@ -131,6 +132,54 @@ def test_other_phone_number_ignored(post, payload, settings):
     settings.WHATSAPP_PHONE_NUMBER_ID = "OTHER"
     assert post(payload()).status_code == 200
     assert not ChatMessage.objects.exists()
+
+
+@pytest.mark.parametrize("number", ["PNID", None])
+def test_other_fields_ignored(post, payload, caplog, number):
+    data = payload()
+    change = data["entry"][0]["changes"][0]
+    change["field"] = "message_template_status_update"
+    if number is None:
+        del change["value"]["metadata"]
+    with caplog.at_level(logging.WARNING):
+        assert post(data).status_code == 200
+    assert not ChatMessage.objects.exists()
+    assert "other phone number" not in caplog.text
+
+
+def test_largest_payload_is_accepted(post, payload):
+    data = payload()
+    data["padding"] = "x" * (3 * 1024 * 1024 - 2048)
+    assert post(data).status_code == 200
+    assert ChatMessage.objects.count() == 1
+
+
+def stamp(when):
+    return str(int(when.timestamp()))
+
+
+def test_late_delivery_does_not_reopen_the_window(post, payload):
+    sent = timezone.now().replace(microsecond=0) - timedelta(days=2)
+    post(payload(timestamp=stamp(sent)))
+    assert Conversation.objects.get().last_inbound_at == sent
+
+
+def test_window_never_moves_back(post, payload):
+    now = timezone.now().replace(microsecond=0)
+    post(payload(wamid="new", timestamp=stamp(now - timedelta(hours=1))))
+    post(payload(wamid="old", timestamp=stamp(now - timedelta(days=2))))
+    assert ChatMessage.objects.count() == 2
+    assert Conversation.objects.get().last_inbound_at == now - timedelta(hours=1)
+
+
+@pytest.mark.parametrize(
+    "timestamp",
+    [None, "abc", "", 5, [], "9" * 30, "9" * 5000, "²", stamp(datetime(2999, 1, 1, tzinfo=UTC))],
+)
+def test_unusable_or_future_timestamp_counts_as_now(post, payload, timestamp):
+    before = timezone.now()
+    assert post(payload(timestamp=timestamp)).status_code == 200
+    assert before <= Conversation.objects.get().last_inbound_at <= timezone.now()
 
 
 def test_nul_bytes_are_removed(post, payload):

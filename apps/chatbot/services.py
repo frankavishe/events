@@ -1,7 +1,7 @@
 """Receiving and answering WhatsApp messages."""
 
 import logging
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
 from django.db import transaction
 from django.db.models import Q
@@ -61,8 +61,22 @@ def receive(message: dict) -> ChatMessage | None:
     )
     if not created:
         return None
-    Conversation.objects.filter(pk=conversation.pk).update(last_inbound_at=timezone.now())
+    sent_at = _sent_at(message)
+    earlier = Q(last_inbound_at=None) | Q(last_inbound_at__lt=sent_at)
+    Conversation.objects.filter(earlier, pk=conversation.pk).update(last_inbound_at=sent_at)
     return stored
+
+
+def _sent_at(message) -> datetime:
+    """When the user sent it, as Meta may deliver days late. Now if unusable or in the future."""
+    now = timezone.now()
+    value = message.get("timestamp")
+    if not isinstance(value, str):
+        return now
+    try:
+        return min(datetime.fromtimestamp(int(value), UTC), now)
+    except (ValueError, OverflowError, OSError):
+        return now
 
 
 def _conversation(wa_id, bsuid) -> Conversation:

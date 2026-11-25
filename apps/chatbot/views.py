@@ -83,9 +83,12 @@ def _signed(body: bytes, signature: str) -> bool:
 
 
 def _values(data):
-    """The `value` objects addressed to our phone number."""
+    """The `value` objects about messages addressed to our phone number."""
     for entry in _dicts(data.get("entry") if isinstance(data, dict) else None):
         for change in _dicts(entry.get("changes")):
+            if change.get("field") != "messages":
+                logger.info("WhatsApp webhook ignored: not about messages")
+                continue
             value = change.get("value")
             if not isinstance(value, dict):
                 continue
