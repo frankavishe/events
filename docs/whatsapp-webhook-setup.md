@@ -140,6 +140,12 @@ test number: changing the callback URL of the live app stops production messages
 | Nothing sent or received on the real number | `WHATSAPP_PHONE_NUMBER_ID` is Meta's test number, or the WABA that owns the real number is not subscribed (step 6) |
 | Log: `Notification skipped` | Outside the 24 h window and the `WHATSAPP_TEMPLATE_*` variable is empty |
 | Other `WhatsApp send returned HTTP 4xx` | Missing permission or asset access, wrong phone number ID, or outside the 24 h window |
+| Reply is `sent` but never arrives; log: `WhatsApp delivery failed (code N)` | Meta accepted the message, then could not deliver it. See the codes below |
+| ... code 131042 | Payment: no valid payment method on the WhatsApp account, or currency or time zone not set |
+| ... code 130497 | The account may not message this country in its business category |
+| ... code 131031 or 368 | The account is restricted or disabled: check Account Quality |
+| ... code 131026 | The recipient is not on WhatsApp, has an old app or has not accepted the terms |
+| ... code 131047 | Outside the 24 h window |
 | User can browse but not book | Their phone is hidden, so Meta sends only a business-scoped ID |
 
 If the endpoint does not answer 200, Meta retries for up to 7 days, so messages may arrive late. Duplicates

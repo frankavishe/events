@@ -246,3 +246,34 @@ def test_gives_up_after_repeated_send_failures(conversation, inbound):
         services.process_conversation(conversation.pk)
     message.refresh_from_db()
     assert message.status == "failed"
+
+
+def failed(payload, errors, wamid="out.1"):
+    data = payload()
+    value = data["entry"][0]["changes"][0]["value"]
+    del value["messages"]
+    value["statuses"] = [
+        {"id": wamid, "status": "failed", "recipient_id": "255712345678", "errors": errors}
+    ]
+    return data
+
+
+@pytest.mark.parametrize("wamid", ["out.1", "sent-from-the-dashboard"])
+def test_failed_delivery_logs_the_code_only(post, payload, conversation, caplog, wamid):
+    sent = ChatMessage.objects.create(
+        conversation=conversation, direction="out", role="model", wa_message_id="out.1"
+    )
+    errors = [{"code": 131042, "title": "secret title", "error_data": {"details": "secret"}}]
+    assert post(failed(payload, errors, wamid)).status_code == 200
+    sent.refresh_from_db()
+    assert sent.delivery_status == ("failed" if wamid == "out.1" else "")
+    assert "WhatsApp delivery failed (code 131042)" in caplog.text
+    assert "secret" not in caplog.text
+    assert "255712345678" not in caplog.text
+
+
+@pytest.mark.parametrize("errors", [None, [], "secret", ["secret"], [{}], [{"code": "secret"}]])
+def test_failed_delivery_with_unusable_errors(post, payload, caplog, errors):
+    assert post(failed(payload, errors)).status_code == 200
+    assert "WhatsApp delivery failed (code None)" in caplog.text
+    assert "secret" not in caplog.text

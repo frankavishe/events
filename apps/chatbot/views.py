@@ -71,6 +71,8 @@ class WhatsAppWebhookView(APIView):
             for status in _dicts(value.get("statuses")):
                 if isinstance(status.get("id"), str) and isinstance(status.get("status"), str):
                     services.record_delivery(status["id"], status["status"])
+                    if status["status"] == "failed":
+                        _log_failure(status)
         return Response({"received": True})
 
 
@@ -99,6 +101,18 @@ def _values(data):
                 logger.warning("WhatsApp webhook ignored: other phone number")
                 continue
             yield value
+
+
+def _log_failure(status):
+    """Meta accepts a message first and reports here why it was not delivered.
+
+    Only numeric codes are logged: the texts may contain private data.
+    """
+    codes = [e.get("code") for e in _dicts(status.get("errors"))] or [None]
+    for code in codes:
+        logger.warning(
+            "WhatsApp delivery failed (code %s)", code if isinstance(code, int) else None
+        )
 
 
 def _dicts(value):
