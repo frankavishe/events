@@ -45,7 +45,9 @@ class UserManager(BaseUserManager):
         """Find a user by email (case-insensitive) or by phone in any accepted format."""
         login = (login or "").strip()
         if "@" in login:
-            return self.get(email__iexact=login)
+            # Stored in lower case. Not `iexact`: PostgreSQL's case rules match spellings that
+            # the login throttles (Python's rules) would count as different accounts.
+            return self.get(email=login.lower())
         return self.get(phone=normalize_phone(login))
 
 
@@ -118,3 +120,16 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     @property
     def is_platform_admin(self) -> bool:
         return self.role == self.Role.ADMIN or self.is_superuser
+
+
+class PasswordCode(BaseModel):
+    """The latest one-time code for setting a user's password. Never holds the code itself."""
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="password_code")
+    code_hash = models.CharField(max_length=64)
+    expires_at = models.DateTimeField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+    used_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Password code for user {self.user_id}"

@@ -231,3 +231,8 @@ def test_llm_factory(settings):
     assert isinstance(get_llm(), FakeLLM)
     settings.LLM_PROVIDER, settings.GEMINI_API_KEY = "gemini", "k"
     assert isinstance(get_llm(), GeminiClient)
+
+
+def test_prompt_explains_app_sign_in():
+    assert "forgot password" in prompts.SYSTEM
+    assert "Never ask for or accept a PIN, password, OTP" in prompts.SYSTEM

@@ -127,3 +127,30 @@ def test_only_rejected_whatsapp_messages_are_limited(api_client, rates, settings
 def test_rejected_whatsapp_verification_is_limited(api_client, rates):
     rates["webhook_rejected"] = "1/min"
     assert statuses(lambda: api_client.get(WHATSAPP), 2) == [403, 429]
+
+
+CODE = "/api/v1/auth/password/code/"
+PASSWORD = "/api/v1/auth/password/"
+
+
+@pytest.mark.parametrize("rate", ["password_code", "password_code_day"])
+def test_password_code_limit_is_the_same_for_unknown_accounts(api_client, rates, rate):
+    rates[rate] = "1/day"
+    known = ClientFactory(phone="+255712345678").phone
+    for first, second in ((known, "0712345678"), ("0799999999", "+255799999999")):
+        result = [api_client.post(CODE, {"login": x}).status_code for x in (first, second)]
+        assert result == [202, 429]
+
+
+def test_password_code_limit_per_address(api_client, rates):
+    rates["password_code_ip"] = "2/hour"
+    names = iter(["a@x.com", "b@x.com", "c@x.com"])
+    assert statuses(lambda: api_client.post(CODE, {"login": next(names)}), 3) == [202, 202, 429]
+
+
+@pytest.mark.parametrize("rate", ["password_confirm", "password_confirm_ip"])
+def test_password_confirm_limits(api_client, rates, rate):
+    rates[rate] = "2/min"
+    body = {"login": "0712345678", "code": "123456", "password": "Pilau-Tamu-2027"}
+    assert statuses(lambda: api_client.post(PASSWORD, body), 3) == [400, 400, 429]
+    assert api_client.post(TOKEN, {"login": "0712345678", "password": "x"}).status_code == 401

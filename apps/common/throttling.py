@@ -19,10 +19,8 @@ class LoginAddressThrottle(_AddressThrottle):
     scope = "login_ip"
 
 
-class LoginThrottle(SimpleRateThrottle):
+class _AccountThrottle(SimpleRateThrottle):
     """Strict limit per account, whatever address the attempts come from."""
-
-    scope = "login"
 
     def get_cache_key(self, request, view):
         data = request.data
@@ -40,6 +38,30 @@ def _canonical(login: str) -> str:
         return login if "@" in login else normalize_phone(login)
     except InvalidPhoneNumber:
         return login
+
+
+class LoginThrottle(_AccountThrottle):
+    scope = "login"
+
+
+class PasswordCodeThrottle(_AccountThrottle):
+    scope = "password_code"
+
+
+class PasswordCodeDayThrottle(_AccountThrottle):
+    scope = "password_code_day"
+
+
+class PasswordCodeAddressThrottle(_AddressThrottle):
+    scope = "password_code_ip"
+
+
+class PasswordConfirmThrottle(_AccountThrottle):
+    scope = "password_confirm"
+
+
+class PasswordConfirmAddressThrottle(_AddressThrottle):
+    scope = "password_confirm_ip"
 
 
 class RegisterThrottle(_AddressThrottle):

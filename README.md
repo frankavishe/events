@@ -30,7 +30,8 @@ Or run everything in containers: `docker compose up -d --build`.
 ## Environment
 
 Every variable is in `.env.example`. With `PAYMENT_GATEWAY=mock`, `MESSAGING_PROVIDER=fake` and
-`LLM_PROVIDER=fake` no outside account is needed.
+`LLM_PROVIDER=fake` no outside account is needed. For password codes also set
+`WHATSAPP_TEMPLATE_AUTH_CODE=auth_code`; in DEBUG the Celery worker prints the code.
 
 ## Architecture
 
@@ -71,6 +72,10 @@ Tests need the `db` container, and no network or credentials.
 - Set `DJANGO_NUM_PROXIES` to the number of proxies in front of the app. Too low and clients share
   one request limit; too high and they can forge their address. Let only the proxy reach the app:
   it must set `X-Forwarded-Proto` and `X-Forwarded-For` itself.
+- Password codes need `WHATSAPP_TEMPLATE_AUTH_CODE`: a Meta authentication template with a
+  copy-code button, approved in `en` and `sw`. Without it the app does not start.
+- Changing a password ends all of that user's sessions. Tokens issued before this feature was
+  deployed stop working once.
 - Turn off or redact path logging in the proxy: AzamPay callback paths contain a secret. The
   app's own logs (JSON, one line per request) use the route and redact the token.
 - Requests are counted in Redis; without Redis the API does not answer.
@@ -84,4 +89,6 @@ Tests need the `db` container, and no network or credentials.
 1. Setup, accounts. 2. Vendors, catalog, events. 3. Orders, payments, ledger.
 4. WhatsApp assistant. 5. Earnings and payouts API, limits, logging, demo data, containers.
 
-Details: `specs/001-event-catering-marketplace/`.
+6. Password reset and account claim by WhatsApp code.
+
+Details: `specs/001-event-catering-marketplace/` and `specs/002-account-recovery/`.

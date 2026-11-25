@@ -76,6 +76,30 @@ def test_template():
 
 
 @respx.mock
+def test_auth_code_is_in_the_body_and_the_copy_button():
+    route = respx.post(URL).mock(return_value=ok())
+    get_messaging_client().send_auth_code(PHONE, "auth_code", "sw", "012345")
+    parameters = [{"type": "text", "text": "012345"}]
+    assert body(route)["to"] == "255712345678"
+    assert body(route)["template"] == {
+        "name": "auth_code",
+        "language": {"code": "sw"},
+        "components": [
+            {"type": "body", "parameters": parameters},
+            {"type": "button", "sub_type": "url", "index": "0", "parameters": parameters},
+        ],
+    }
+
+
+@pytest.mark.parametrize("debug", [True, False])
+def test_fake_client_shows_the_code_only_in_debug(settings, capsys, debug):
+    settings.MESSAGING_PROVIDER, settings.DEBUG = "fake", debug
+    get_messaging_client().send_auth_code(PHONE, "auth_code", "en", "012345")
+    FakeMessagingClient.reset()
+    assert ("012345" in capsys.readouterr().err) is debug
+
+
+@respx.mock
 def test_long_text_is_split_without_loss():
     route = respx.post(URL).mock(return_value=ok())
     text = "word " * 2000

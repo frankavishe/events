@@ -156,6 +156,11 @@ REST_FRAMEWORK = {
         "user": env("THROTTLE_USER", default="300/min"),
         "login": env("THROTTLE_LOGIN", default="10/min"),
         "login_ip": env("THROTTLE_LOGIN_IP", default="60/min"),
+        "password_code": env("THROTTLE_PASSWORD_CODE", default="3/hour"),
+        "password_code_day": env("THROTTLE_PASSWORD_CODE_DAY", default="10/day"),
+        "password_code_ip": env("THROTTLE_PASSWORD_CODE_IP", default="60/hour"),
+        "password_confirm": env("THROTTLE_PASSWORD_CONFIRM", default="10/min"),
+        "password_confirm_ip": env("THROTTLE_PASSWORD_CONFIRM_IP", default="60/min"),
         "register": env("THROTTLE_REGISTER", default="60/hour"),
         "webhook_rejected": env("THROTTLE_WEBHOOK_REJECTED", default="30/min"),
     },
@@ -196,6 +201,8 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=env.int("JWT_REFRESH_DAYS", default=7)),
     "ROTATE_REFRESH_TOKENS": True,
     "UPDATE_LAST_LOGIN": True,
+    "CHECK_REVOKE_TOKEN": True,  # changing the password ends every session
+    "TOKEN_REFRESH_SERIALIZER": "apps.accounts.serializers.TokenRefreshSerializer",
     "AUTH_HEADER_TYPES": ("Bearer",),
     "SIGNING_KEY": env("JWT_SIGNING_KEY", default="") or SECRET_KEY,
 }
@@ -241,6 +248,8 @@ WHATSAPP_GRAPH_VERSION = env("WHATSAPP_GRAPH_VERSION", default="v26.0")
 WHATSAPP_TEMPLATE_NEW_ORDER = env("WHATSAPP_TEMPLATE_NEW_ORDER", default="")
 WHATSAPP_TEMPLATE_ORDER_STATUS = env("WHATSAPP_TEMPLATE_ORDER_STATUS", default="")
 WHATSAPP_TEMPLATE_PAYMENT_FAILED = env("WHATSAPP_TEMPLATE_PAYMENT_FAILED", default="")
+# Authentication template with a copy-code button (en and sw) for password codes.
+WHATSAPP_TEMPLATE_AUTH_CODE = env("WHATSAPP_TEMPLATE_AUTH_CODE", default="")
 LLM_PROVIDER = env("LLM_PROVIDER", default="fake")
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
 GEMINI_MODEL = env("GEMINI_MODEL", default="gemini-3.8-flash")

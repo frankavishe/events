@@ -201,6 +201,64 @@ paths:
               schema:
                 $ref: '#/components/schemas/VendorProfile'
           description: ''
+  /api/v1/auth/password/:
+    post:
+      operationId: v1_auth_password_create
+      description: Set the password with the code. Signs out every other session;
+        returns new tokens.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetPasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetPasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetPasswordRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+          description: ''
+  /api/v1/auth/password/code/:
+    post:
+      operationId: v1_auth_password_code_create
+      description: |-
+        Send a one-time code by WhatsApp to the account's phone, to set or reset its password.
+
+        The answer is the same whether or not the account exists.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordCodeRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordCodeRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordCodeRequestRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordCodeResponse'
+          description: ''
   /api/v1/auth/register/:
     post:
       operationId: v1_auth_register_create
@@ -307,7 +365,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenRefresh'
+                $ref: '#/components/schemas/TokenPair'
           description: ''
   /api/v1/categories/:
     get:
@@ -2799,6 +2857,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VendorPayout'
+    PasswordCodeRequestRequest:
+      type: object
+      properties:
+        login:
+          type: string
+          minLength: 1
+          description: Phone (any accepted format) or email.
+      required:
+      - login
+    PasswordCodeResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
     PatchedEventRequest:
       type: object
       properties:
@@ -3263,6 +3337,26 @@ components:
           maxLength: 100
       required:
       - name
+    SetPasswordRequest:
+      type: object
+      properties:
+        login:
+          type: string
+          minLength: 1
+          description: Phone (any accepted format) or email.
+        code:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 15
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - code
+      - login
+      - password
     TokenPair:
       type: object
       properties:
@@ -3273,19 +3367,9 @@ components:
       required:
       - access
       - refresh
-    TokenRefresh:
-      type: object
-      properties:
-        access:
-          type: string
-          readOnly: true
-        refresh:
-          type: string
-      required:
-      - access
-      - refresh
     TokenRefreshRequest:
       type: object
+      description: Also refuses deleted users and tokens from before a password change.
       properties:
         refresh:
           type: string

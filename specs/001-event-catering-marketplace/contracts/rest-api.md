@@ -12,7 +12,9 @@ implemented.
 | POST | `/auth/register/` | public | `{full_name, phone, email?, password, preferred_language?}` → client user + tokens |
 | POST | `/auth/register/vendor/` | public | user fields + `{business_name, description, offers_food, offers_drinks, service_area_ids, min_notice_days}` → vendor (status pending) + tokens |
 | POST | `/auth/token/` | public | `{login (phone or email), password}` → `{access, refresh}` |
-| POST | `/auth/token/refresh/` | public | |
+| POST | `/auth/token/refresh/` | public | 401 after a password change |
+| POST | `/auth/password/code/` | public | `{login}` → always 202 `{detail}`; sends a WhatsApp code to an active client's or vendor's phone |
+| POST | `/auth/password/` | public | `{login, code, password}` → `{access, refresh}`, other sessions end; 400 `invalid_code` (one answer for every reason). See `specs/002-account-recovery/` |
 | GET/PATCH | `/me/` | any | own profile (name, email, preferred_language) |
 
 ## Vendors

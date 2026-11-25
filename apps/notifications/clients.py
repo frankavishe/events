@@ -1,6 +1,7 @@
 """Outgoing WhatsApp messages. Tokens and message texts are never logged or put in errors."""
 
 import logging
+import sys
 from dataclasses import dataclass
 from itertools import count
 from typing import ClassVar, Protocol
@@ -38,12 +39,16 @@ class Recipient:
 
 
 class MessagingClient(Protocol):
-    """Both methods return the provider's message id, if known, or raise MessagingError."""
+    """All methods return the provider's message id, if known, or raise MessagingError."""
 
     def send_text(self, recipient: Recipient, text: str) -> str | None: ...
 
     def send_template(
         self, recipient: Recipient, name: str, language: str, params: list[str]
+    ) -> str | None: ...
+
+    def send_auth_code(
+        self, recipient: Recipient, name: str, language: str, code: str
     ) -> str | None: ...
 
 
@@ -72,6 +77,20 @@ class WhatsAppCloudClient:
             "name": name,
             "language": {"code": language},
             "components": [{"type": "body", "parameters": parameters}],
+        }
+        return self._send(recipient, {"type": "template", "template": template})
+
+    def send_auth_code(self, recipient, name, language, code):
+        # Meta wants the code twice: in the text and for the "copy code" button, which it stores
+        # as a URL button. Needs a phone; a bsuid is refused.
+        parameters = [{"type": "text", "text": code}]
+        template = {
+            "name": name,
+            "language": {"code": language},
+            "components": [
+                {"type": "body", "parameters": parameters},
+                {"type": "button", "sub_type": "url", "index": "0", "parameters": parameters},
+            ],
         }
         return self._send(recipient, {"type": "template", "template": template})
 
@@ -118,6 +137,12 @@ class FakeMessagingClient:
 
     def send_template(self, recipient, name, language, params):
         return self._record(recipient, text="", template=name, language=language, params=params)
+
+    def send_auth_code(self, recipient, name, language, code):
+        message_id = self.send_template(recipient, name, language, [code])
+        if settings.DEBUG:  # so that it can be used in local development
+            print(f"[fake WhatsApp] password code: {code}", file=sys.stderr)
+        return message_id
 
     def _record(self, recipient, **message):
         if self.fail_with:

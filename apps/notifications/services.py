@@ -3,6 +3,7 @@
 import logging
 from datetime import timedelta
 
+from django.conf import settings
 from django.utils import timezone
 
 from apps.chatbot.models import ChatMessage, Conversation
@@ -73,6 +74,13 @@ def send(*, phone, language, texts, params, template, extra="") -> None:
             text=text,
             status=ChatMessage.Status.SENT,
         )
+
+
+def send_auth_code(*, phone, language, code) -> None:
+    """Always the template, and never kept in the chat history, which the LLM reads."""
+    get_messaging_client().send_auth_code(
+        Recipient(phone=phone), settings.WHATSAPP_TEMPLATE_AUTH_CODE, language, code
+    )
 
 
 def _window_open(conversation) -> bool:

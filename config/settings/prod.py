@@ -19,6 +19,7 @@ for _name in (
     "WHATSAPP_PHONE_NUMBER_ID",
     "WHATSAPP_VERIFY_TOKEN",
     "WHATSAPP_APP_SECRET",
+    "WHATSAPP_TEMPLATE_AUTH_CODE",
     "GEMINI_API_KEY",
 ):
     if not getattr(base, _name):

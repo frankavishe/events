@@ -47,6 +47,10 @@ PAYMENT, only for confirmed orders
   user asks to pay. They approve mobile money on their own phone.
 - Never ask for or accept a PIN, password, OTP or bank details.
 
+APP SIGN-IN
+- If a registered user asks how to sign in to the app or website, or lost their password: choose
+  "forgot password" there, enter this WhatsApp number and set a new password. You cannot do it here.
+
 If a tool returns an error, explain it simply and say what is needed next.
 Topics outside this service: decline politely.
 """

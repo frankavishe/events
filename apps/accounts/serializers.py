@@ -1,7 +1,10 @@
-from django.contrib.auth import password_validation
 from django.contrib.auth.models import update_last_login
 from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions, serializers
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.serializers import (
+    TokenRefreshSerializer as BaseTokenRefreshSerializer,
+)
 from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
 from apps.common.phone import InvalidPhoneNumber, normalize_phone
@@ -69,10 +72,7 @@ class RegisterSerializer(serializers.Serializer):
         candidate = User(
             phone=attrs["phone"], full_name=attrs["full_name"], email=attrs.get("email")
         )
-        try:
-            password_validation.validate_password(attrs["password"], user=candidate)
-        except Exception as exc:  # django ValidationError
-            raise serializers.ValidationError({"password": list(exc.messages)}) from exc
+        services.check_password_strength(attrs["password"], candidate)
         return attrs
 
     def create(self, validated_data):
@@ -117,3 +117,25 @@ class LoginTokenSerializer(serializers.Serializer):
 class TokenPairSerializer(serializers.Serializer):
     access = serializers.CharField()
     refresh = serializers.CharField()
+
+
+class TokenRefreshSerializer(BaseTokenRefreshSerializer):
+    """Also refuses deleted users and tokens from before a password change."""
+
+    def validate(self, attrs):
+        JWTAuthentication().get_user(self.token_class(attrs["refresh"]))
+        return super().validate(attrs)
+
+
+class PasswordCodeRequestSerializer(serializers.Serializer):
+    login = serializers.CharField(help_text="Phone (any accepted format) or email.")
+
+
+class PasswordCodeResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
+class SetPasswordSerializer(serializers.Serializer):
+    login = serializers.CharField(help_text="Phone (any accepted format) or email.")
+    code = serializers.CharField(write_only=True, max_length=15)
+    password = serializers.CharField(write_only=True, style={"input_type": "password"})
